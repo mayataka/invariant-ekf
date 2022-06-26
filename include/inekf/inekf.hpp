@@ -28,11 +28,12 @@
 #include "inekf/lie_group.hpp"
 #include "inekf/observations.hpp"
 #include "inekf/macros.hpp"
+#include "inekf/error_type.hpp"
+#include "inekf/state_transition_matrix.hpp"
+#include "inekf/discrete_noise_matrix.hpp"
 
 
 namespace inekf {
-
-enum ErrorType {LeftInvariant, RightInvariant};
 
 class InEKF {
 public:
@@ -245,9 +246,11 @@ private:
   std::map<int,int> estimated_landmarks_;
   Eigen::Vector3d magnetic_field_;
   Eigen::LDLT<Eigen::MatrixXd> ldlt_;
-
-  Eigen::MatrixXd StateTransitionMatrix(const Eigen::Vector3d& w, const Eigen::Vector3d& a, double dt);
-  Eigen::MatrixXd DiscreteNoiseMatrix(const Eigen::MatrixXd& Phi, double dt);
+  StateTransitionMatrix state_transition_matrix_;
+  DiscreteNoiseMatrix discrete_noise_matrix_;
+  Eigen::MatrixXd P_pred_, X_pred_;
+  Eigen::Vector3d phi_;
+  Eigen::Matrix3d G0_, G1_, G2_;
 
   // Corrects state using invariant observation models
   void CorrectRightInvariant(const Observation& obs);
