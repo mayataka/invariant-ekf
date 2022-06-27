@@ -12,15 +12,15 @@ class ContactInfo(object):
         self.active = False
         self.normal = np.array([0., 0., 1.])
         self.distance = 0.0
-        self.normal_force = 0.0
         self.force = np.zeros(3)
+        self.normal_force = 0.0
 
     def deactivate(self):
         self.active = False
         self.normal = np.array([0., 0., 1.])
         self.distance = 0.0
-        self.normal_force = 0.0
         self.force = np.zeros(3)
+        self.normal_force = 0.0
 
     def set_from_pybullet(self, contacts):
         self.deactivate()
@@ -31,7 +31,9 @@ class ContactInfo(object):
                 self.normal = np.array(e[7])
                 self.distance = np.array(e[8])
                 self.normal_force = e[9]
-                self.force = self.normal_force * self.normal
+                self.force = self.normal * self.normal_force
+                self.force += e[10] * np.array(e[11])
+                self.force += e[12] * np.array(e[13])
 
 def print_contact_info(contact_info):
     active = []
@@ -40,14 +42,15 @@ def print_contact_info(contact_info):
     force = []
     for e in contact_info:
         active.append(e.active)
-        normal.append(e.normal.tolist())
-        force.append(e.force.tolist())
+        normal.append(e.normal)
+        force.append(e.force)
         normal_force.append(e.normal_force)
+    np.set_printoptions(precision=4)
     print('Contact Info (PyBullet):')
     print('  contact state:', active)
     print('  contact normal:', normal)
     print('  contact force:', force)
-    print('  normal contact force:', normal_force)
+    print('  normal contact force: ', np.array(normal_force))
 
 # imu_gyro_noise: 0.01 
 # imu_lin_accel_noise: 0.1
@@ -79,7 +82,7 @@ class A1Simulator:
         self.camera_yaw = 0.0
         self.camera_pitch = 0.0
         self.camera_target_pos = [0., 0., 0.]
-        self.plane = None
+        self.ground = None
         self.robot = None
         self.friction_coefficient = None
         self.base_lin_vel_world_prev = np.zeros(3)
@@ -125,11 +128,11 @@ class A1Simulator:
         pybullet.setTimeStep(self.time_step)
         pybullet.setAdditionalSearchPath(pybullet_data.getDataPath())
         if self.terrain:
-            self.plane = pybullet.loadURDF("terrain.urdf")
+            self.ground = pybullet.loadURDF("terrain.urdf")
         else:
-            self.plane = pybullet.loadURDF("plane.urdf")
+            self.ground = pybullet.loadURDF("plane.urdf")
         if self.friction_coefficient is not None:
-            pybullet.changeDynamics(self.plane, -1, lateralFriction=self.friction_coefficient)
+            pybullet.changeDynamics(self.ground, -1, lateralFriction=self.friction_coefficient)
         self.robot = pybullet.loadURDF(self.path_to_urdf,  
                                        useFixedBase=False, 
                                        useMaximalCoordinates=False)
@@ -141,7 +144,7 @@ class A1Simulator:
 
     def step_simulation(self):
         pybullet.stepSimulation()
-        contacts = pybullet.getContactPoints(self.robot, self.plane)
+        contacts = pybullet.getContactPoints(self.robot, self.ground)
         self.contact_info_LF.set_from_pybullet(contacts)
         self.contact_info_LH.set_from_pybullet(contacts)
         self.contact_info_RF.set_from_pybullet(contacts)

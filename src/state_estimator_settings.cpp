@@ -19,6 +19,8 @@ StateEstimatorSettings StateEstimatorSettings::UnitreeA1(
   settings.slip_estimator_settings.beta1 = {2.5, 2.5, 2.5, 2.5};
   settings.slip_estimator_settings.slip_velocity_cov_alpha = 10.0;
   settings.slip_estimator_settings.slip_prob_threshold = 0.5;
+  settings.slip_estimator_settings.lpf_contact_surface_normal_cutoff = 10;
+  settings.slip_estimator_settings.lpf_friction_coefficient_cutoff = 10;
 
   settings.noise_params.setGyroscopeNoise(0.01);
   settings.noise_params.setAccelerometerNoise(0.1);

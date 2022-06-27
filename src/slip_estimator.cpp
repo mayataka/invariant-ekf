@@ -4,7 +4,8 @@
 namespace inekf {
 
 SlipEstimator::SlipEstimator(const RobotModel& robot_model, 
-                             const SlipEstimatorSettings& settings)
+                             const SlipEstimatorSettings& settings,
+                             const double dt)
   : settings_(settings),
     contact_surface_estimate_(robot_model.numContacts(), Eigen::Matrix3d::Identity()),
     contact_velocity_(robot_model.numContacts(), Eigen::Vector3d::Zero()), 
@@ -17,6 +18,10 @@ SlipEstimator::SlipEstimator(const RobotModel& robot_model,
     slip_covariance_(robot_model.numContacts(), 0), 
     friction_coefficient_estimate_(robot_model.numContacts(), 0),
     slip_state_(),
+    lpf_contact_surface_normal_(
+        robot_model.numContacts(), LowPassFilter<double, 3>(dt, settings.lpf_contact_surface_normal_cutoff)),
+    lpf_friction_coefficient_(
+        robot_model.numContacts(), LowPassFilter<double, 1>(dt, settings.lpf_friction_coefficient_cutoff)),
     num_contacts_(robot_model.numContacts()) {
 }
 
@@ -63,26 +68,32 @@ void SlipEstimator::update(const RobotModel& robot_model,
   }
   // Estimate the contact surface and normal
   for (int i=0; i<num_contacts_; ++i) {
-    force_velocity_plane_normal_estimate_[i] 
-        = contact_velocity_[i].cross(contact_estimator.getContactForceEstimate()[i]).normalized();
-    contact_surface_normal_estimate_[i] 
-        = force_velocity_plane_normal_estimate_[i].cross(contact_velocity_[i]).normalized();
-    const double nx = contact_surface_normal_estimate_[i].coeff(0);
-    const double ny = contact_surface_normal_estimate_[i].coeff(1);
-    const double nz = contact_surface_normal_estimate_[i].coeff(2);
-    const double nxny_norm = std::sqrt(nx*nx + ny*ny);
-    contact_surface_estimate_[i]
-        <<     ny/nxny_norm,   -nx/nxny_norm,         0.,
-            nx*nz/nxny_norm, ny*nz/nxny_norm, -nxny_norm,
-                         nx,              ny,         nz;
+    if (slip_state_[i].second) {
+      force_velocity_plane_normal_estimate_[i] 
+          = contact_velocity_[i].cross(contact_estimator.getContactForceEstimate()[i]).normalized();
+      lpf_contact_surface_normal_[i].update(
+          force_velocity_plane_normal_estimate_[i].cross(contact_velocity_[i]).normalized());
+      contact_surface_normal_estimate_[i] = lpf_contact_surface_normal_[i].getEstimate();
+      const double nx = contact_surface_normal_estimate_[i].coeff(0);
+      const double ny = contact_surface_normal_estimate_[i].coeff(1);
+      const double nz = contact_surface_normal_estimate_[i].coeff(2);
+      const double nxny_norm = std::sqrt(nx*nx + ny*ny);
+      contact_surface_estimate_[i]
+          <<     ny/nxny_norm,   -nx/nxny_norm,         0.,
+              nx*nz/nxny_norm, ny*nz/nxny_norm, -nxny_norm,
+                          nx,              ny,         nz;
+    }
   }
-  // Friction coefficient 
+  // Estimate the friction coefficient 
   for (int i=0; i<num_contacts_; ++i) {
-    contact_force_surface_local_[i].noalias()
-        = contact_surface_estimate_[i].transpose() * contact_estimator.getContactForceEstimate()[i];
-    const double fn = contact_force_surface_local_[i].coeff(2);
-    const double ft = contact_force_surface_local_[i].template head<2>().template lpNorm<2>();
-    friction_coefficient_estimate_[i] = ft / fn;
+    if (slip_state_[i].second) {
+      contact_force_surface_local_[i].noalias()
+          = contact_surface_estimate_[i].transpose() * contact_estimator.getContactForceEstimate()[i];
+      const double fn = contact_force_surface_local_[i].coeff(2);
+      const double ft = contact_force_surface_local_[i].template head<2>().template lpNorm<2>();
+      lpf_friction_coefficient_[i].update(Vector1d(ft/fn));
+      friction_coefficient_estimate_[i] = lpf_friction_coefficient_[i].getEstimate().coeff(0);
+    }
   }
 }
 
@@ -124,6 +135,40 @@ const std::vector<Eigen::Vector3d>& SlipEstimator::getContactSurfaceNormalEstima
 
 const std::vector<Eigen::Matrix3d>& SlipEstimator::getContactSurfaceEstimate() const {
   return contact_surface_estimate_;
+}
+
+
+void SlipEstimator::resetContactSurfaceNormalEstimate(
+    const std::vector<Eigen::Vector3d>& contact_surface_normal) {
+  assert(contact_surface_normal.size() == num_contacts_);
+  for (int i=0; i<num_contacts_; ++i) {
+    lpf_contact_surface_normal_[i].reset(contact_surface_normal[i]);
+  }
+}
+
+
+void SlipEstimator::resetContactSurfaceNormalEstimate(
+    const Eigen::Vector3d& contact_surface_normal) {
+  for (int i=0; i<num_contacts_; ++i) {
+    lpf_contact_surface_normal_[i].reset(contact_surface_normal);
+  }
+}
+
+
+void SlipEstimator::resetFrictionCoefficientEstimate(
+    const std::vector<double>& friction_coefficient) {
+  assert(friction_coefficient.size() == num_contacts_);
+  for (int i=0; i<num_contacts_; ++i) {
+    lpf_friction_coefficient_[i].reset(Vector1d(friction_coefficient[i]));
+  }
+}
+
+
+void SlipEstimator::resetFrictionCoefficientEstimate(
+    const double friction_coefficient) {
+  for (int i=0; i<num_contacts_; ++i) {
+    lpf_friction_coefficient_[i].reset(Vector1d(friction_coefficient));
+  }
 }
 
 

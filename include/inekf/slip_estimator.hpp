@@ -13,6 +13,7 @@
 #include "inekf/macros.hpp"
 #include "inekf/robot_model.hpp"
 #include "inekf/contact_estimator.hpp"
+#include "inekf/low_pass_filter.hpp"
 
 
 namespace inekf {
@@ -22,6 +23,8 @@ struct SlipEstimatorSettings {
   std::vector<double> beta1;
   double slip_velocity_cov_alpha;
   double slip_prob_threshold;
+  double lpf_contact_surface_normal_cutoff;
+  double lpf_friction_coefficient_cutoff;
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
@@ -29,8 +32,11 @@ struct SlipEstimatorSettings {
 
 class SlipEstimator {
 public:
+  using Vector1d = Eigen::Matrix<double, 1, 1>;
+
   SlipEstimator(const RobotModel& robot_model, 
-                const SlipEstimatorSettings& settings);
+                const SlipEstimatorSettings& settings,
+                const double dt);
 
   SlipEstimator();
 
@@ -63,6 +69,17 @@ public:
 
   const std::vector<Eigen::Matrix3d>& getContactSurfaceEstimate() const;
 
+  void resetContactSurfaceNormalEstimate(
+      const std::vector<Eigen::Vector3d>& contact_surface_normal);
+
+  void resetContactSurfaceNormalEstimate(
+      const Eigen::Vector3d& contact_surface_normal=(Eigen::Vector3d() << 0., 0., 1.0).finished());
+
+  void resetFrictionCoefficientEstimate(
+      const std::vector<double>& friction_coefficient);
+
+  void resetFrictionCoefficientEstimate(const double friction_coefficient=0.6);
+
   void disp(std::ostream& os) const;
 
   friend std::ostream& operator<<(std::ostream& os, const SlipEstimator& d);
@@ -79,6 +96,8 @@ private:
   std::vector<double> contact_velocity_norm_, slip_probability_, slip_covariance_,
                       friction_coefficient_estimate_;
   std::vector<std::pair<int, bool>> slip_state_;
+  std::vector<LowPassFilter<double, 3>> lpf_contact_surface_normal_;
+  std::vector<LowPassFilter<double, 1>> lpf_friction_coefficient_;
   int num_contacts_;
 };
 

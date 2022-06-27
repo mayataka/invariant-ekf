@@ -27,16 +27,22 @@ estimator_settings.contact_estimator_settings.contact_force_cov_alpha = 10.0
 estimator_settings.slip_estimator_settings.beta0 = [-5.0, -5.0, -5.0, -5.0]
 estimator_settings.slip_estimator_settings.beta1 = [25.0, 25.0, 25.0, 25.0]
 estimator_settings.slip_estimator_settings.slip_velocity_cov_alpha = 10.0
+estimator_settings.slip_estimator_settings.lpf_contact_surface_normal_cutoff = 10.0
+estimator_settings.slip_estimator_settings.lpf_friction_coefficient_cutoff = 10.0
 estimator_settings.noise_params.contact_cov = 0.01 * np.eye(3, 3)
 estimator_settings.dynamic_contact_estimation = True
 estimator_settings.contact_position_noise = 0.1 
 estimator_settings.contact_rotation_noise = 0.1 
-estimator_settings.lpf_gyro_accel_cutoff = 250
-estimator_settings.lpf_lin_accel_cutoff  = 250
-estimator_settings.lpf_dqJ_cutoff  = 10
-estimator_settings.lpf_ddqJ_cutoff = 5
-estimator_settings.lpf_tauJ_cutoff = 10
+estimator_settings.lpf_gyro_accel_cutoff = 250.0
+estimator_settings.lpf_lin_accel_cutoff  = 250.0
+estimator_settings.lpf_dqJ_cutoff  = 10.0
+estimator_settings.lpf_ddqJ_cutoff = 5.0
+estimator_settings.lpf_tauJ_cutoff = 10.0
 estimator = inekf.StateEstimator(estimator_settings)
+
+estimator.reset_contact_surface_normal_estimate(
+    [np.array([0., 0., 1.]), np.array([0., 0., 1.]), np.array([0., 0., 1.]), np.array([0., 0., 1.])])
+estimator.reset_friction_coefficient_estimate([0.6, 0.6, 0.6, 0.6])
 
 sim.init()
 sim.set_camera(2.0, 45, -10, [0, 0, 0.318]+np.array([0.1, 0.5, 0.]))

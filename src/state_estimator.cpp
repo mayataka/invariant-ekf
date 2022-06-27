@@ -9,7 +9,7 @@ StateEstimator::StateEstimator(const StateEstimatorSettings& settings)
     leg_kinematics_(),
     robot_model_(settings.path_to_urdf, settings.imu_frame, settings.contact_frames),
     contact_estimator_(robot_model_, settings.contact_estimator_settings),
-    slip_estimator_(robot_model_, settings.slip_estimator_settings),
+    slip_estimator_(robot_model_, settings.slip_estimator_settings, settings.dt),
     lpf_gyro_accel_world_(settings.dt, settings.lpf_gyro_accel_cutoff),
     lpf_lin_accel_world_(settings.dt, settings.lpf_lin_accel_cutoff),
     lpf_dqJ_(settings.dt, settings.lpf_dqJ_cutoff, robot_model_.nJ()),
@@ -227,18 +227,20 @@ const Eigen::VectorXd& StateEstimator::getJointTorqueEstimate() const {
 }
 
 
-const std::vector<Eigen::Vector3d>& StateEstimator::getContactForceEstimate() const {
-  return contact_estimator_.getContactForceEstimate();
-}
-
-
-const std::vector<double>& StateEstimator::getContactProbability() const {
-  return contact_estimator_.getContactProbability();
-}
-
-
 const ContactEstimator& StateEstimator::getContactEstimator() const {
   return contact_estimator_;
+}
+
+
+void StateEstimator::resetContactSurfaceNormalEstimate(
+    const std::vector<Eigen::Vector3d>& contact_surface_normal) {
+  slip_estimator_.resetContactSurfaceNormalEstimate(contact_surface_normal);
+}
+
+
+void StateEstimator::resetFrictionCoefficientEstimate(
+    const std::vector<double>& friction_coefficient) {
+  slip_estimator_.resetFrictionCoefficientEstimate(friction_coefficient);
 }
 
 

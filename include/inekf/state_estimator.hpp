@@ -163,19 +163,15 @@ public:
   ///
   const Eigen::VectorXd& getJointTorqueEstimate() const;
 
-  ///
-  /// @return const reference to the conatct force estimates. 
-  ///
-  const std::vector<Eigen::Vector3d>& getContactForceEstimate() const;
-
-  ///
-  /// @return const reference to the conatct probabilities. 
-  ///
-  const std::vector<double>& getContactProbability() const;
-
   const ContactEstimator& getContactEstimator() const;
 
   const SlipEstimator& getSlipEstimator() const;
+
+  void resetContactSurfaceNormalEstimate(
+      const std::vector<Eigen::Vector3d>& contact_surface_normal);
+
+  void resetFrictionCoefficientEstimate(
+      const std::vector<double>& friction_coefficient);
 
   ///
   /// @return const reference to the state estimator settings. 

@@ -42,6 +42,10 @@ PYBIND11_MODULE(state_estimator, m) {
           py::arg("qJ"), py::arg("dqJ"), py::arg("tauJ"))
     .def("get_contact_estimator", &StateEstimator::getContactEstimator)
     .def("get_slip_estimator", &StateEstimator::getSlipEstimator)
+    .def("reset_contact_surface_normal_estimate", &StateEstimator::resetContactSurfaceNormalEstimate,
+          py::arg("contact_surface_normal"))
+    .def("reset_friction_coefficient_estimate", &StateEstimator::resetFrictionCoefficientEstimate,
+          py::arg("friction_coefficient"))
     .def_property_readonly("base_position_estimate", &StateEstimator::getBasePositionEstimate)
     .def_property_readonly("base_rotation_estimate", &StateEstimator::getBaseRotationEstimate)
     .def_property_readonly("base_quaternion_estimate", &StateEstimator::getBaseQuaternionEstimate)
@@ -53,9 +57,7 @@ PYBIND11_MODULE(state_estimator, m) {
     .def_property_readonly("imu_linear_acceleration_bias_estimate", &StateEstimator::getIMULinearAccelerationBiasEstimate)
     .def_property_readonly("joint_velocity_estimate", &StateEstimator::getJointVelocityEstimate)
     .def_property_readonly("joint_acceleration_estimate", &StateEstimator::getJointAccelerationEstimate)
-    .def_property_readonly("joint_torque_estimate", &StateEstimator::getJointTorqueEstimate)
-    .def_property_readonly("contact_force_estimate", &StateEstimator::getContactForceEstimate)
-    .def_property_readonly("contact_probability", &StateEstimator::getContactProbability);
+    .def_property_readonly("joint_torque_estimate", &StateEstimator::getJointTorqueEstimate);
 }
 
 } // namespace python
