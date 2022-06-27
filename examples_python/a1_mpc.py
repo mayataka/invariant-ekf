@@ -16,14 +16,16 @@ sim = a1_simulator.A1Simulator(PATH_TO_URDF, TIME_STEP,
                                imu_gyro_bias_noise=0.00001,
                                imu_lin_accel_bias_noise=0.0001,
                                qJ_noise=0.001, dqJ_noise=0.1, 
-                               tauJ_noise=0.1)
+                               tauJ_noise=0.1, terrain=False)
+                            #    tauJ_noise=0.1, terrain=True)
+sim.set_friction_coefficient(0.2)
 
 estimator_settings = inekf.StateEstimatorSettings.UnitreeA1(PATH_TO_URDF, TIME_STEP)
 estimator_settings.contact_estimator_settings.beta0 = [-20.0, -20.0, -20.0, -20.0]
 estimator_settings.contact_estimator_settings.beta1 = [0.7, 0.7, 0.7, 0.7]
 estimator_settings.contact_estimator_settings.contact_force_cov_alpha = 10.0
 estimator_settings.slip_estimator_settings.beta0 = [-5.0, -5.0, -5.0, -5.0]
-estimator_settings.slip_estimator_settings.beta1 = [2.5, 2.5, 2.5, 2.5]
+estimator_settings.slip_estimator_settings.beta1 = [10.0, 10.0, 10.0, 10.0]
 estimator_settings.slip_estimator_settings.slip_velocity_cov_alpha = 10.0
 estimator_settings.noise_params.contact_cov = 0.01 * np.eye(3, 3)
 estimator_settings.dynamic_contact_estimation = True
@@ -45,8 +47,8 @@ base_pos, base_quat, base_lin_vel_world, base_ang_vel_world = sim.get_base_state
 estimator.init(base_pos=base_pos, base_quat=base_quat, base_lin_vel_world=base_lin_vel_world,
                imu_gyro_bias=np.zeros(3), imu_lin_accel_bias=np.zeros(3))
 robot = mpc_factory.create_robot()
-# mpc, planner = mpc_factory.create_mpc_trot()
-mpc, planner = mpc_factory.create_mpc_jump()
+mpc, planner = mpc_factory.create_mpc_trot()
+# mpc, planner = mpc_factory.create_mpc_jump()
 
 base_pos_true = []
 base_quat_true = []

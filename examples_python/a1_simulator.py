@@ -43,7 +43,8 @@ class A1Simulator:
                  imu_gyro_noise=0.01, imu_lin_accel_noise=0.1,
                  imu_gyro_bias_noise=0.00001,
                  imu_lin_accel_bias_noise=0.0001,
-                 qJ_noise=0.001, dqJ_noise=0.1, tauJ_noise=0.1, fJ_noise=1.0):
+                 qJ_noise=0.001, dqJ_noise=0.1, tauJ_noise=0.1, fJ_noise=1.0,
+                 terrain=False):
         self.path_to_urdf = path_to_urdf
         self.time_step = time_step
         self.imu_gyro_noise = imu_gyro_noise
@@ -56,6 +57,7 @@ class A1Simulator:
         self.fJ_noise = fJ_noise
         self.imu_gyro_bias = np.zeros(3)
         self.imu_accel_bias = np.zeros(3)
+        self.terrain = terrain
         self.calib_camera = False
         self.camera_distance = 0.0
         self.camera_yaw = 0.0
@@ -63,6 +65,7 @@ class A1Simulator:
         self.camera_target_pos = [0., 0., 0.]
         self.plane = None
         self.robot = None
+        self.friction_coefficient = None
         self.base_lin_vel_world_prev = np.zeros(3)
         self.q = np.array([0, 0, 0.3181, 0, 0, 0, 1, 
                            0.0,  0.67, -1.3, 
@@ -94,6 +97,10 @@ class A1Simulator:
                                             self.camera_pitch,
                                             self.camera_target_pos)
 
+    def set_friction_coefficient(self, mu):
+        assert mu > 0.0
+        self.friction_coefficient = mu
+
     def init(self, q=None):
         if q is not None:
             self.q = q
@@ -101,7 +108,12 @@ class A1Simulator:
         pybullet.setGravity(0, 0, -9.81)
         pybullet.setTimeStep(self.time_step)
         pybullet.setAdditionalSearchPath(pybullet_data.getDataPath())
-        self.plane = pybullet.loadURDF("plane.urdf")
+        if self.terrain:
+            self.plane = pybullet.loadURDF("terrain.urdf")
+        else:
+            self.plane = pybullet.loadURDF("plane.urdf")
+        if self.friction_coefficient is not None:
+            pybullet.changeDynamics(self.plane, -1, lateralFriction=self.friction_coefficient)
         self.robot = pybullet.loadURDF(self.path_to_urdf,  
                                        useFixedBase=False, 
                                        useMaximalCoordinates=False)

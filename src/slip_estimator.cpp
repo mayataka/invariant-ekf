@@ -42,6 +42,7 @@ void SlipEstimator::update(const RobotModel& robot_model,
     slip_probability_[i]
         = 1.0 / (1.0 + std::exp(- settings_.beta1[i] * contact_velocity_[i].template lpNorm<2>()
                                 - settings_.beta0[i]));
+    slip_probability_[i] *= contact_estimator.getContactProbability()[i];
     if (std::isnan(slip_probability_[i]) || std::isinf(slip_probability_[i])) {
       slip_probability_[i] = 0;
     }
@@ -127,6 +128,7 @@ const std::vector<Eigen::Matrix3d>& SlipEstimator::getContactSurfaceEstimate() c
 
 
 void SlipEstimator::disp(std::ostream& os) const {
+  Eigen::IOFormat fmt(4, 0, ", ", "\n", "[", "]");
   os << "Slip estimation:" << std::endl;
   os << "  slip state: [";
   for (int i=0; i<num_contacts_-1; ++i) {
@@ -142,9 +144,9 @@ void SlipEstimator::disp(std::ostream& os) const {
   /////////////////////////////////////////
   os << "  contact velocity: [";
   for (int i=0; i<num_contacts_-1; ++i) {
-    os << "[" << contact_velocity_[i].transpose() << "], ";
+    os << "[" << contact_velocity_[i].transpose().format(fmt) << "], ";
   }
-  os << "[" << contact_velocity_[num_contacts_-1].transpose() << "]]" << std::endl;
+  os << "[" << contact_velocity_[num_contacts_-1].transpose().format(fmt) << "]]" << std::endl;
   /////////////////////////////////////////
   os << "  slip velocity norm: [";
   for (int i=0; i<num_contacts_-1; ++i) {
@@ -166,31 +168,25 @@ void SlipEstimator::disp(std::ostream& os) const {
   /////////////////////////////////////////
   os << "  contact surface normal estimate: [";
   for (int i=0; i<num_contacts_-1; ++i) {
-    os << "[" << getContactSurfaceNormalEstimate()[i].transpose() << "], ";
+    os << "[" << getContactSurfaceNormalEstimate()[i].transpose().format(fmt) << "], ";
   }
-  os << "[" << getContactSurfaceNormalEstimate()[num_contacts_-1].transpose() << "]]" << std::endl;
+  os << "[" << getContactSurfaceNormalEstimate()[num_contacts_-1].transpose().format(fmt) << "]]" << std::endl;
   /////////////////////////////////////////
   os << "  contact surface estimate: [";
   for (int i=0; i<num_contacts_-1; ++i) {
-    os << "[" << getContactSurfaceNormalEstimate()[i].transpose() << "], ";
+    os << "[" << getContactSurfaceEstimate()[i].row(0).format(fmt) << "]  ";
   }
-  os << "[" << getContactSurfaceNormalEstimate()[num_contacts_-1].transpose() << "]]" << std::endl;
-  /////////////////////////////////////////
-  os << "  contact surface estimate: [";
+  os << "[" << getContactSurfaceEstimate()[num_contacts_-1].row(0).format(fmt) << "]" << std::endl;
+  os << "                             ";
   for (int i=0; i<num_contacts_-1; ++i) {
-    os << "[" << getContactSurfaceEstimate()[i].row(0) << "]  ";
+    os << "[" << getContactSurfaceEstimate()[i].row(1).format(fmt) << "]  ";
   }
-  os << "[" << getContactSurfaceEstimate()[num_contacts_-1].row(0) << "]" << std::endl;
-  os << "                               ";
+  os << "[" << getContactSurfaceEstimate()[num_contacts_-1].row(1).format(fmt) << "]" << std::endl;
+  os << "                             ";
   for (int i=0; i<num_contacts_-1; ++i) {
-    os << "[" << getContactSurfaceEstimate()[i].row(1) << "]  ";
+    os << "[" << getContactSurfaceEstimate()[i].row(2).format(fmt) << "]  ";
   }
-  os << "[" << getContactSurfaceEstimate()[num_contacts_-1].row(1) << "]" << std::endl;
-  os << "                               ";
-  for (int i=0; i<num_contacts_-1; ++i) {
-    os << "[" << getContactSurfaceEstimate()[i].row(2) << "]  ";
-  }
-  os << "[" << getContactSurfaceEstimate()[num_contacts_-1].row(2) << "]" << std::endl;
+  os << "[" << getContactSurfaceEstimate()[num_contacts_-1].row(2).format(fmt) << "]" << std::endl;
   os << "]" << std::flush;
 }
 
