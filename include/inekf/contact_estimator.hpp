@@ -49,13 +49,15 @@ public:
 
   const std::vector<std::pair<int, bool>>& getContactState() const;
 
+  const std::vector<double>& getContactProbability() const;
+
+  const std::vector<double>& getContactForceCovariance() const;
+
+  // double getContactForceCovariance() const;
+
   const std::vector<Eigen::Vector3d>& getContactForceEstimate() const;
 
   const std::vector<double>& getNormalContactForceEstimate() const;
-
-  const std::vector<double>& getContactProbability() const;
-
-  double getContactForceCovariance() const;
 
   const std::vector<Eigen::Vector3d>& getContactSurfaceNormal() const;
 
@@ -65,10 +67,12 @@ public:
 
 private:
   ContactEstimatorSettings settings_;
-  std::vector<Eigen::Vector3d> contact_force_estimate_, contact_surface_normal_;
+  std::vector<Eigen::Vector3d> contact_force_estimate_, 
+                               contact_force_estimate_prev_, 
+                               contact_surface_normal_;
   std::vector<double> normal_contact_force_estimate_, 
                       normal_contact_force_estimate_prev_, 
-                      contact_probability_, contact_covariance_;
+                      contact_probability_, contact_force_covariance_;
   std::vector<std::pair<int, bool>> contact_state_;
   int num_contacts_;
 };

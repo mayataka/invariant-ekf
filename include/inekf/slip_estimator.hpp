@@ -12,7 +12,7 @@
 
 #include "inekf/macros.hpp"
 #include "inekf/robot_model.hpp"
-#include "inekf/schmitt_trigger.hpp"
+#include "inekf/contact_estimator.hpp"
 
 
 namespace inekf {
@@ -20,9 +20,8 @@ namespace inekf {
 struct SlipEstimatorSettings {
   std::vector<double> beta0;
   std::vector<double> beta1;
-  std::vector<double> force_sensor_bias;
-  double contact_force_cov_alpha;
-  SchmittTriggerSettings schmitt_trigger_settings;
+  double slip_velocity_cov_alpha;
+  double slip_prob_threshold;
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
@@ -50,22 +49,30 @@ public:
 
   void setParameters(const SlipEstimatorSettings& settings);
 
-  std::vector<std::pair<int, bool>> getSlipState(const double prob_threshold=0.5) const;
+  const std::vector<std::pair<int, bool>>& getSlipState() const;
+
+  const std::vector<double>& getSlipProbability() const;
+
+  const std::vector<double>& getSlipVelocityCovariance() const;
 
   const std::vector<double>& getFrictionCoefficientEstimate() const;
 
-  const std::vector<Eigen::Matrix3d>& getContactSurface() const;
+  const std::vector<Eigen::Vector3d>& getContactSurfaceNormalEstimate() const;
 
-  const std::vector<Eigen::Vector3d>& getContactSurfaceNormal() const;
+  const std::vector<Eigen::Matrix3d>& getContactSurfaceEstimate() const;
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 private:
   SlipEstimatorSettings settings_;
-  std::vector<Eigen::Matrix3d> contact_surface_;
-  std::vector<Eigen::Vector3d> contact_surface_normal_;
-
-  std::vector<double> friction_coefficient_estimate_;, 
+  std::vector<Eigen::Matrix3d> contact_surface_estimate_;
+  std::vector<Eigen::Vector3d> contact_velocity_, contact_velocity_prev_, 
+                               force_velocity_plane_normal_estimate_,
+                               contact_surface_normal_estimate_,
+                               contact_force_surface_local_;
+  std::vector<double> contact_velocity_norm_, slip_probability_, slip_covariance_,
+                      friction_coefficient_estimate_;
+  std::vector<std::pair<int, bool>> slip_state_;
   int num_contacts_;
 };
 

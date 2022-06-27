@@ -43,7 +43,7 @@ class A1Simulator:
                  imu_gyro_noise=0.01, imu_lin_accel_noise=0.1,
                  imu_gyro_bias_noise=0.00001,
                  imu_lin_accel_bias_noise=0.0001,
-                 qJ_noise=0.001, dqJ_noise=0.1, tauJ_noise=0.1):
+                 qJ_noise=0.001, dqJ_noise=0.1, tauJ_noise=0.1, fJ_noise=1.0):
         self.path_to_urdf = path_to_urdf
         self.time_step = time_step
         self.imu_gyro_noise = imu_gyro_noise
@@ -53,6 +53,7 @@ class A1Simulator:
         self.qJ_noise = qJ_noise
         self.dqJ_noise = dqJ_noise
         self.tauJ_noise = tauJ_noise
+        self.fJ_noise = fJ_noise
         self.imu_gyro_bias = np.zeros(3)
         self.imu_accel_bias = np.zeros(3)
         self.calib_camera = False
@@ -226,7 +227,7 @@ class A1Simulator:
 
     def apply_torque_command(self, tauJ):
         self.torque_control_mode = True
-        self.tauJ = tauJ.copy()
+        self.tauJ = tauJ.copy() + np.random.normal(0, self.fJ_noise, 12)
         # turn off position and velocity controls
         joints = [7, 9, 10, 2, 4, 5, 17, 19, 20, 12, 14, 15]
         for e in joints:

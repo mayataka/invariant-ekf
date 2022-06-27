@@ -88,7 +88,7 @@ public:
   /// pinocchio::LOCAL_WORLD_ALIGNED.
   ///
   void updateLegKinematics(const Eigen::VectorXd& qJ,
-                           const pinocchio::ReferenceFrame rf=pinocchio::LOCAL_WORLD_ALIGNED);
+                           const pinocchio::ReferenceFrame rf=pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED);
 
   ///
   /// @brief Updates leg kinemarics.
@@ -98,20 +98,17 @@ public:
   /// pinocchio::LOCAL_WORLD_ALIGNED.
   ///
   void updateLegKinematics(const Eigen::VectorXd& qJ, const Eigen::VectorXd& dqJ,
-                           const pinocchio::ReferenceFrame rf=pinocchio::LOCAL_WORLD_ALIGNED);
+                           const pinocchio::ReferenceFrame rf=pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED);
 
   ///
   /// @brief Updates kinemarics.
   /// @param[in] base_pos Base position. 
   /// @param[in] base_quat Base orientation expressed by quaternion (x, y, z, w). 
   /// @param[in] qJ Joint positions. Size must be RobotModel::nJ().
-  /// @param[in] rf Reference frame of the kinematics. Default is 
-  /// pinocchio::LOCAL_WORLD_ALIGNED.
   ///
   void updateKinematics(const Eigen::Vector3d& base_pos, 
                         const Eigen::Vector4d& base_quat, 
-                        const Eigen::VectorXd& qJ, 
-                        const pinocchio::ReferenceFrame rf=pinocchio::LOCAL_WORLD_ALIGNED);
+                        const Eigen::VectorXd& qJ); 
 
   ///
   /// @brief Updates kinemarics.
@@ -123,15 +120,12 @@ public:
   /// local coordinate. 
   /// @param[in] qJ Joint positions. Size must be RobotModel::nJ().
   /// @param[in] dqJ Joint velocities. Size must be RobotModel::nJ().
-  /// @param[in] rf Reference frame of the kinematics. Default is 
-  /// pinocchio::LOCAL_WORLD_ALIGNED.
   ///
   void updateKinematics(const Eigen::Vector3d& base_pos, 
                         const Eigen::Vector4d& base_quat, 
                         const Eigen::Vector3d& base_linear_vel, 
                         const Eigen::Vector3d& base_angular_vel, 
-                        const Eigen::VectorXd& qJ, const Eigen::VectorXd& dqJ,
-                        const pinocchio::ReferenceFrame rf=pinocchio::LOCAL_WORLD_ALIGNED);
+                        const Eigen::VectorXd& qJ, const Eigen::VectorXd& dqJ);
 
   ///
   /// @brief Updates leg dynamics.
@@ -188,9 +182,14 @@ public:
   const Eigen::Matrix3d& getContactRotation(const int contact_id) const;
 
   ///
-  /// @return const reference to the contact position. 
+  /// @return const reference to the contact velocity expressed in the local coordinate. 
   ///
-  const Eigen::Vector3d& getContactVelocity(const int contact_id) const;
+  const Eigen::Vector3d& getContactVelocityLocal(const int contact_id) const;
+
+  ///
+  /// @return const reference to the contact velocity expressed in the world coordinate. 
+  ///
+  const Eigen::Vector3d& getContactVelocityWorld(const int contact_id) const;
 
   ///
   /// @return const reference to the contact Jacobian with respect to the 
@@ -252,7 +251,7 @@ private:
   std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>> jac_6d_;
   int imu_frame_;
   std::vector<int> contact_frames_;
-  std::vector<Eigen::Vector3d> contact_velocity_;
+  std::vector<Eigen::Vector3d> contact_velocity_local_, contact_velocity_world_;
 
 };
 

@@ -9,6 +9,7 @@ StateEstimator::StateEstimator(const StateEstimatorSettings& settings)
     leg_kinematics_(),
     robot_model_(settings.path_to_urdf, settings.imu_frame, settings.contact_frames),
     contact_estimator_(robot_model_, settings.contact_estimator_settings),
+    slip_estimator_(robot_model_, settings.slip_estimator_settings),
     lpf_gyro_accel_world_(settings.dt, settings.lpf_gyro_accel_cutoff),
     lpf_lin_accel_world_(settings.dt, settings.lpf_lin_accel_cutoff),
     lpf_dqJ_(settings.dt, settings.lpf_dqJ_cutoff, robot_model_.nJ()),
@@ -39,6 +40,7 @@ StateEstimator::StateEstimator()
     leg_kinematics_(),
     robot_model_(),
     contact_estimator_(),
+    slip_estimator_(),
     lpf_gyro_accel_world_(),
     lpf_lin_accel_world_(),
     lpf_dqJ_(),
@@ -123,7 +125,7 @@ void StateEstimator::update(const Eigen::Vector3d& imu_gyro_raw,
   lpf_dqJ_.update(dqJ);
   lpf_tauJ_.update(tauJ);
   // Update contact info
-  robot_model_.updateLegKinematics(qJ);
+  robot_model_.updateLegKinematics(qJ, pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED);
   if (settings_.dynamic_contact_estimation) {
     robot_model_.updateDynamics(getBasePositionEstimate(), getBaseQuaternionEstimate(),
                                 getBaseLinearVelocityEstimateLocal(), imu_gyro_raw,
@@ -135,10 +137,11 @@ void StateEstimator::update(const Eigen::Vector3d& imu_gyro_raw,
   }
   contact_estimator_.update(robot_model_, lpf_tauJ_.getEstimate());
   inekf_.setContacts(contact_estimator_.getContactState());
-  const double contact_force_cov = contact_estimator_.getContactForceCovariance();
+  // const double contact_force_cov = contact_estimator_.getContactForceCovariance();
   for (int i=0; i<robot_model_.numContacts(); ++i) {
     leg_kinematics_[i].setContactPosition(
         robot_model_.getContactPosition(i)-robot_model_.getBasePosition());
+    const double contact_force_cov = contact_estimator_.getContactForceCovariance()[i];
     leg_kinematics_[i].setContactPositionCovariance(
         contact_force_cov*Eigen::Matrix3d::Identity());
   }

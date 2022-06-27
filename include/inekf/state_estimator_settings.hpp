@@ -7,6 +7,7 @@
 #include "inekf/macros.hpp"
 #include "inekf/noise_params.hpp"
 #include "inekf/contact_estimator.hpp"
+#include "inekf/slip_estimator.hpp"
 
 
 namespace inekf {
@@ -32,6 +33,11 @@ public:
   /// @brief Contact estimator settings. 
   ///
   ContactEstimatorSettings contact_estimator_settings;
+
+  /// 
+  /// @brief Slip estimator settings. 
+  ///
+  SlipEstimatorSettings slip_estimator_settings;
 
   /// 
   /// @brief Noise parameters (covariances) of InEKF. 

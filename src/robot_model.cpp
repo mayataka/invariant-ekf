@@ -15,10 +15,6 @@ pinocchio::Model RobotModel::buildFloatingBaseModel(
 RobotModel::RobotModel(const std::string& path_to_urdf, const int imu_frame,
                        const std::vector<int>& contact_frames) 
   : RobotModel(buildFloatingBaseModel(path_to_urdf), imu_frame, contact_frames) {
-  contact_velocity_.clear();
-  for (int i=0; i<4; ++i) {
-    contact_velocity_.push_back(Eigen::Vector3d::Zero());
-  }
 }
 
 
@@ -26,10 +22,6 @@ RobotModel::RobotModel(const std::string& path_to_urdf,
                        const std::string& imu_frame,
                        const std::vector<std::string>& contact_frames) 
   : RobotModel(buildFloatingBaseModel(path_to_urdf), imu_frame, contact_frames) {
-  contact_velocity_.clear();
-  for (int i=0; i<4; ++i) {
-    contact_velocity_.push_back(Eigen::Vector3d::Zero());
-  }
 }
 
 
@@ -43,7 +35,9 @@ RobotModel::RobotModel(const pinocchio::Model& pin_model, const int imu_frame,
     v_(),
     a_(),
     tau_(),
-    jac_6d_() {
+    jac_6d_(),
+    contact_velocity_local_(contact_frames_.size(), Eigen::Vector3d::Zero()),
+    contact_velocity_world_(contact_frames_.size(), Eigen::Vector3d::Zero()) {
   data_ = pinocchio::Data(model_);
   q_   = Eigen::VectorXd(model_.nq);
   v_   = Eigen::VectorXd(model_.nv);
@@ -51,10 +45,6 @@ RobotModel::RobotModel(const pinocchio::Model& pin_model, const int imu_frame,
   tau_ = Eigen::VectorXd(model_.nv);
   for (int i=0; i<contact_frames.size(); ++i) {
     jac_6d_.push_back(Eigen::MatrixXd::Zero(6, model_.nv));
-  }
-  contact_velocity_.clear();
-  for (int i=0; i<4; ++i) {
-    contact_velocity_.push_back(Eigen::Vector3d::Zero());
   }
 }
 
@@ -70,7 +60,9 @@ RobotModel::RobotModel(const pinocchio::Model& pin_model,
     v_(),
     a_(),
     tau_(),
-    jac_6d_() {
+    jac_6d_(),
+    contact_velocity_local_(contact_frames_.size(), Eigen::Vector3d::Zero()),
+    contact_velocity_world_(contact_frames_.size(), Eigen::Vector3d::Zero()) {
   data_ = pinocchio::Data(model_);
   q_   = Eigen::VectorXd(model_.nq);
   v_   = Eigen::VectorXd(model_.nv);
@@ -104,10 +96,6 @@ RobotModel::RobotModel(const pinocchio::Model& pin_model,
     }
     contact_frames_.push_back(model_.getFrameId(e));
   }
-  contact_velocity_.clear();
-  for (int i=0; i<4; ++i) {
-    contact_velocity_.push_back(Eigen::Vector3d::Zero());
-  }
 }
 
 
@@ -121,37 +109,28 @@ RobotModel::RobotModel()
     a_(),
     tau_(),
     jac_6d_(),
-    contact_velocity_() {
+    contact_velocity_local_(), 
+    contact_velocity_world_() {
 }
 
 
 void RobotModel::updateLegKinematics(const Eigen::VectorXd& qJ, 
                                      const pinocchio::ReferenceFrame rf) {
   updateKinematics(Eigen::Vector3d::Zero(), 
-                   Eigen::Quaterniond::Identity().coeffs(), qJ, rf);
+                   Eigen::Quaterniond::Identity().coeffs(), qJ);
+  pinocchio::computeJointJacobians(model_, data_, q_);
+  for (int i=0; i<contact_frames_.size(); ++i) {
+    pinocchio::getFrameJacobian(model_, data_, contact_frames_[i], rf, jac_6d_[i]);
+  }
 }
 
 
 void RobotModel::updateLegKinematics(const Eigen::VectorXd& qJ, 
-                                const Eigen::VectorXd& dqJ,
-                                const pinocchio::ReferenceFrame rf) {
+                                     const Eigen::VectorXd& dqJ,
+                                     const pinocchio::ReferenceFrame rf) {
   updateKinematics(Eigen::Vector3d::Zero(), 
                    Eigen::Quaterniond::Identity().coeffs(), 
-                   Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero(), 
-                   qJ, dqJ, rf);
-}
-
-
-void RobotModel::updateKinematics(const Eigen::Vector3d& base_pos, 
-                                  const Eigen::Vector4d& base_quat, 
-                                  const Eigen::VectorXd& qJ, 
-                                  const pinocchio::ReferenceFrame rf) {
-  q_.template head<3>()     = base_pos;
-  q_.template segment<4>(3) = base_quat;
-  q_.tail(model_.nq-7) = qJ;
-  pinocchio::normalize(model_, q_);
-  pinocchio::forwardKinematics(model_, data_, q_);
-  pinocchio::updateFramePlacements(model_, data_);
+                   Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero(), qJ, dqJ);
   pinocchio::computeJointJacobians(model_, data_, q_);
   for (int i=0; i<contact_frames_.size(); ++i) {
     pinocchio::getFrameJacobian(model_, data_, contact_frames_[i], rf, jac_6d_[i]);
@@ -161,11 +140,22 @@ void RobotModel::updateKinematics(const Eigen::Vector3d& base_pos,
 
 void RobotModel::updateKinematics(const Eigen::Vector3d& base_pos, 
                                   const Eigen::Vector4d& base_quat, 
+                                  const Eigen::VectorXd& qJ) {
+  q_.template head<3>()     = base_pos;
+  q_.template segment<4>(3) = base_quat;
+  q_.tail(model_.nq-7) = qJ;
+  pinocchio::normalize(model_, q_);
+  pinocchio::forwardKinematics(model_, data_, q_);
+  pinocchio::updateFramePlacements(model_, data_);
+}
+
+
+void RobotModel::updateKinematics(const Eigen::Vector3d& base_pos, 
+                                  const Eigen::Vector4d& base_quat, 
                                   const Eigen::Vector3d& base_linear_vel, 
                                   const Eigen::Vector3d& base_angular_vel, 
                                   const Eigen::VectorXd& qJ, 
-                                  const Eigen::VectorXd& dqJ, 
-                                  const pinocchio::ReferenceFrame rf) {
+                                  const Eigen::VectorXd& dqJ) {
   q_.template head<3>()     = base_pos;
   q_.template segment<4>(3) = base_quat;
   v_.template head<3>()     = base_linear_vel;
@@ -175,13 +165,11 @@ void RobotModel::updateKinematics(const Eigen::Vector3d& base_pos,
   pinocchio::normalize(model_, q_);
   pinocchio::forwardKinematics(model_, data_, q_, v_);
   pinocchio::updateFramePlacements(model_, data_);
-  pinocchio::computeJointJacobians(model_, data_, q_);
-  for (int i=0; i<contact_frames_.size(); ++i) {
-    pinocchio::getFrameJacobian(model_, data_, contact_frames_[i], rf, jac_6d_[i]);
-  }
   for (int i=0; i<4; ++i) {
-    contact_velocity_[i] = pinocchio::getFrameVelocity(model_, data_, contact_frames_[i], 
-                                                       pinocchio::ReferenceFrame::WORLD).linear();
+    contact_velocity_local_[i] = pinocchio::getFrameVelocity(model_, data_, contact_frames_[i], 
+                                                             pinocchio::ReferenceFrame::LOCAL).linear();
+    contact_velocity_world_[i] = pinocchio::getFrameVelocity(model_, data_, contact_frames_[i], 
+                                                             pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED).linear();
   }
 }
 
@@ -239,6 +227,20 @@ const Eigen::Matrix3d& RobotModel::getContactRotation(const int contact_id) cons
   assert(contact_id >= 0);
   assert(contact_id < contact_frames_.size());
   return data_.oMf[contact_frames_[contact_id]].rotation();
+}
+
+
+const Eigen::Vector3d& RobotModel::getContactVelocityLocal(const int contact_id) const {
+  assert(contact_id >= 0);
+  assert(contact_id < contact_frames_.size());
+  return contact_velocity_local_[contact_id];
+}
+
+
+const Eigen::Vector3d& RobotModel::getContactVelocityWorld(const int contact_id) const {
+  assert(contact_id >= 0);
+  assert(contact_id < contact_frames_.size());
+  return contact_velocity_world_[contact_id];
 }
 
 

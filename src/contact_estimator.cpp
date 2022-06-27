@@ -7,11 +7,12 @@ ContactEstimator::ContactEstimator(const RobotModel& robot_model,
                                    const ContactEstimatorSettings& settings)
   : settings_(settings),
     contact_force_estimate_(robot_model.numContacts(), Eigen::Vector3d::Zero()),
+    contact_force_estimate_prev_(robot_model.numContacts(), Eigen::Vector3d::Zero()),
     contact_surface_normal_(robot_model.numContacts(), Eigen::Vector3d::Zero()),
     normal_contact_force_estimate_(robot_model.numContacts(), 0),
     normal_contact_force_estimate_prev_(robot_model.numContacts(), 0),
     contact_probability_(robot_model.numContacts(), 0),
-    contact_covariance_(robot_model.numContacts(), 0),
+    contact_force_covariance_(robot_model.numContacts(), 0),
     contact_state_(),
     num_contacts_(robot_model.numContacts()) {
   for (auto& e : contact_surface_normal_) {
@@ -27,11 +28,12 @@ ContactEstimator::ContactEstimator(const RobotModel& robot_model,
 ContactEstimator::ContactEstimator() 
   : settings_(),
     contact_force_estimate_(),
+    contact_force_estimate_prev_(),
     contact_surface_normal_(),
     normal_contact_force_estimate_(),
     normal_contact_force_estimate_prev_(),
     contact_probability_(),
-    contact_covariance_(),
+    contact_force_covariance_(),
     contact_state_(),
     num_contacts_(0) {
 }
@@ -62,9 +64,11 @@ void ContactEstimator::update(const RobotModel& robot_model,
   // Contact covariance
   for (int i=0; i<num_contacts_; ++i) {
     const double df = normal_contact_force_estimate_[i] - normal_contact_force_estimate_prev_[i];
-    contact_covariance_[i] = settings_.contact_force_cov_alpha * df * df;
+    contact_force_covariance_[i] = settings_.contact_force_cov_alpha * df * df;
+    contact_force_estimate_prev_[i] = contact_force_estimate_[i];
     normal_contact_force_estimate_prev_[i] = normal_contact_force_estimate_[i];
   }
+  // Deterministic contact state
   contact_state_.clear();
   for (int i=0; i<num_contacts_; ++i) {
     contact_state_.push_back(
@@ -83,6 +87,39 @@ const std::vector<std::pair<int, bool>>& ContactEstimator::getContactState() con
 }
 
 
+const std::vector<double>& ContactEstimator::getContactProbability() const {
+  return contact_probability_;
+}
+
+
+const std::vector<double>& ContactEstimator::getContactForceCovariance() const {
+  return contact_force_covariance_;
+}
+
+
+// double ContactEstimator::getContactForceCovariance() const {
+//   int num_active_contacts = 0;
+//   for (const auto e : getContactState()) {
+//     if (e.second) {
+//       ++num_active_contacts;
+//     }
+//   }
+//   double contact_force_cov = 0;
+//   for (int i=0; i<num_contacts_; ++i) {
+//     if (getContactState()[i].second) {
+//       contact_force_cov += contact_force_covariance_[i];
+//     }
+//   }
+//   if (num_active_contacts > 0) {
+//     contact_force_cov *= (1.0/num_active_contacts);
+//   }
+//   else {
+//     contact_force_cov = 0;
+//   }
+//   return contact_force_cov;
+// }
+
+
 const std::vector<Eigen::Vector3d>& ContactEstimator::getContactForceEstimate() const {
   return contact_force_estimate_;
 }
@@ -90,32 +127,6 @@ const std::vector<Eigen::Vector3d>& ContactEstimator::getContactForceEstimate() 
 
 const std::vector<double>& ContactEstimator::getNormalContactForceEstimate() const {
   return normal_contact_force_estimate_;
-}
-
-
-const std::vector<double>& ContactEstimator::getContactProbability() const {
-  return contact_probability_;
-}
-
-
-double ContactEstimator::getContactForceCovariance() const {
-  int num_active_contacts = 0;
-  for (const auto e : getContactState()) {
-    if (e.second) {
-      ++num_active_contacts;
-    }
-  }
-  double contact_force_cov = 0;
-  for (const auto e : contact_covariance_) {
-    contact_force_cov += e;
-  }
-  if (num_active_contacts > 0) {
-    contact_force_cov *= (1.0/num_active_contacts);
-  }
-  else {
-    contact_force_cov = 0;
-  }
-  return contact_force_cov;
 }
 
 

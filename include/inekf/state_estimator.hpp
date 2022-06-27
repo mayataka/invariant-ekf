@@ -17,6 +17,7 @@
 #include "inekf/observations.hpp"
 #include "inekf/robot_model.hpp"
 #include "inekf/contact_estimator.hpp"
+#include "inekf/slip_estimator.hpp"
 #include "inekf/low_pass_filter.hpp"
 #include "inekf/state_estimator_settings.hpp"
 
@@ -185,6 +186,7 @@ private:
   vectorKinematics leg_kinematics_;
   RobotModel robot_model_;
   ContactEstimator contact_estimator_;
+  SlipEstimator slip_estimator_;
   LowPassFilter<double, 3> lpf_gyro_accel_world_, lpf_lin_accel_world_;
   LowPassFilter<double, Eigen::Dynamic> lpf_dqJ_, lpf_ddqJ_, lpf_tauJ_;
   Vector3d imu_gyro_local_, imu_gyro_world_, imu_gyro_world_prev_, 
