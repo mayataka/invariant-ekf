@@ -25,7 +25,7 @@ estimator_settings.contact_estimator_settings.beta0 = [-20.0, -20.0, -20.0, -20.
 estimator_settings.contact_estimator_settings.beta1 = [0.7, 0.7, 0.7, 0.7]
 estimator_settings.contact_estimator_settings.contact_force_cov_alpha = 10.0
 estimator_settings.slip_estimator_settings.beta0 = [-5.0, -5.0, -5.0, -5.0]
-estimator_settings.slip_estimator_settings.beta1 = [10.0, 10.0, 10.0, 10.0]
+estimator_settings.slip_estimator_settings.beta1 = [25.0, 25.0, 25.0, 25.0]
 estimator_settings.slip_estimator_settings.slip_velocity_cov_alpha = 10.0
 estimator_settings.noise_params.contact_cov = 0.01 * np.eye(3, 3)
 estimator_settings.dynamic_contact_estimation = True
@@ -113,11 +113,6 @@ if PLOT:
 t = 0
 for i in range(30000):
     sim.step_simulation()
-    print('F_LF: ', sim.contact_info_LF.force)
-    print('F_LH: ', sim.contact_info_LH.force)
-    print('F_RF: ', sim.contact_info_RF.force)
-    print('F_RH: ', sim.contact_info_RH.force)
-    
     # estimate state
     imu_gyro_raw, imu_lin_acc_raw = sim.get_imu_state()
     qJ, dqJ, tauJ = sim.get_joint_state()
@@ -150,6 +145,8 @@ for i in range(30000):
     print('t: ', t, ',   KKT error: ', mpc.KKT_error())
     print(estimator.get_contact_estimator())
     print(estimator.get_slip_estimator())
+    a1_simulator.print_contact_info([sim.contact_info_LF, sim.contact_info_LH, 
+                                     sim.contact_info_RF, sim.contact_info_RH])
     robot.forward_kinematics(q)
     sim.apply_torque_command(mpc.get_initial_control_input().copy())
     t = t + TIME_STEP

@@ -30,8 +30,24 @@ class ContactInfo(object):
                 self.active = True
                 self.normal = np.array(e[7])
                 self.distance = np.array(e[8])
-                self.normal_force = np.array(e[9])
+                self.normal_force = e[9]
                 self.force = self.normal_force * self.normal
+
+def print_contact_info(contact_info):
+    active = []
+    normal = []
+    normal_force = []
+    force = []
+    for e in contact_info:
+        active.append(e.active)
+        normal.append(e.normal.tolist())
+        force.append(e.force.tolist())
+        normal_force.append(e.normal_force)
+    print('Contact Info (PyBullet):')
+    print('  contact state:', active)
+    print('  contact normal:', normal)
+    print('  contact force:', force)
+    print('  normal contact force:', normal_force)
 
 # imu_gyro_noise: 0.01 
 # imu_lin_accel_noise: 0.1
