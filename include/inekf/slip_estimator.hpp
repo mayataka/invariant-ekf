@@ -53,6 +53,8 @@ public:
 
   const std::vector<double>& getSlipProbability() const;
 
+  const std::vector<double>& getSlipVelocityNorm() const;
+
   const std::vector<double>& getSlipVelocityCovariance() const;
 
   const std::vector<double>& getFrictionCoefficientEstimate() const;
@@ -60,6 +62,10 @@ public:
   const std::vector<Eigen::Vector3d>& getContactSurfaceNormalEstimate() const;
 
   const std::vector<Eigen::Matrix3d>& getContactSurfaceEstimate() const;
+
+  void disp(std::ostream& os) const;
+
+  friend std::ostream& operator<<(std::ostream& os, const SlipEstimator& d);
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 

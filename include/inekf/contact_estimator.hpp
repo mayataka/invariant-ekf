@@ -63,6 +63,10 @@ public:
 
   void setContactSurfaceNormal(const std::vector<Eigen::Vector3d>& contact_surface_normal);
 
+  void disp(std::ostream& os) const;
+
+  friend std::ostream& operator<<(std::ostream& os, const ContactEstimator& d);
+
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 private:

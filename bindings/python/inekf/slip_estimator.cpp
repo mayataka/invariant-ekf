@@ -28,10 +28,16 @@ PYBIND11_MODULE(slip_estimator, m) {
           py::arg("robot_model"), py::arg("contact_estimator"))
     .def("get_slip_state", &SlipEstimator::getSlipState)
     .def("get_slip_probability", &SlipEstimator::getSlipProbability)
+    .def("get_slip_velocity_norm", &SlipEstimator::getSlipVelocityNorm)
     .def("get_slip_velocity_covariance", &SlipEstimator::getSlipVelocityCovariance)
     .def("get_friction_coefficient_estimate", &SlipEstimator::getFrictionCoefficientEstimate)
     .def("get_contact_surface_normal_estimate", &SlipEstimator::getContactSurfaceNormalEstimate)
-    .def("get_contact_surface_estimate", &SlipEstimator::getContactSurfaceEstimate);
+    .def("get_contact_surface_estimate", &SlipEstimator::getContactSurfaceEstimate)
+     .def("__str__", [](const SlipEstimator& self) {
+        std::stringstream ss;
+        ss << self;
+        return ss.str();
+      });
 }
 
 } // namespace python

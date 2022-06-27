@@ -141,4 +141,50 @@ void ContactEstimator::setContactSurfaceNormal(
   contact_surface_normal_ = contact_surface_normal;
 }
 
+
+void ContactEstimator::disp(std::ostream& os) const {
+  os << "Contact estimation:" << std::endl;
+  os << "  contact state: [";
+  for (int i=0; i<num_contacts_-1; ++i) {
+    os << std::boolalpha << getContactState()[i].second << ", ";
+  }
+  os << std::boolalpha << getContactState()[num_contacts_-1].second << "]" << std::endl;
+  /////////////////////////////////////////
+  os << "  contact probability: [";
+  for (int i=0; i<num_contacts_-1; ++i) {
+    os << getContactProbability()[i] << ", ";
+  }
+  os << getContactProbability()[num_contacts_-1] << "]" << std::endl;
+  /////////////////////////////////////////
+  os << "  contact force covariance: [";
+  for (int i=0; i<num_contacts_-1; ++i) {
+    os << getContactForceCovariance()[i] << ", ";
+  }
+  os << getContactForceCovariance()[num_contacts_-1] << "]" << std::endl;
+  /////////////////////////////////////////
+  os << "  contact force estimate: [";
+  for (int i=0; i<num_contacts_-1; ++i) {
+    os << "[" << getContactForceEstimate()[i].transpose() << "], ";
+  }
+  os << "[" << getContactForceEstimate()[num_contacts_-1].transpose() << "]]" << std::endl;
+  /////////////////////////////////////////
+  os << "  normal contact force estimate: [";
+  for (int i=0; i<num_contacts_-1; ++i) {
+    os << getNormalContactForceEstimate()[i] << ", ";
+  }
+  os << getNormalContactForceEstimate()[num_contacts_-1] << "]" << std::endl;
+  /////////////////////////////////////////
+  os << "  assumed contact surface normal: [";
+  for (int i=0; i<num_contacts_-1; ++i) {
+    os << "[" << getContactSurfaceNormal()[i].transpose() << "], ";
+  }
+  os << "[" << getContactSurfaceNormal()[num_contacts_-1].transpose() << "]]" << std::flush;
+}
+
+
+std::ostream& operator<<(std::ostream& os, const ContactEstimator& e) {
+  e.disp(os);
+  return os;
+}
+
 } // namespace inekf

@@ -23,7 +23,7 @@ estimator_settings.contact_estimator_settings.beta0 = [-20.0, -20.0, -20.0, -20.
 estimator_settings.contact_estimator_settings.beta1 = [0.7, 0.7, 0.7, 0.7]
 estimator_settings.contact_estimator_settings.contact_force_cov_alpha = 10.0
 estimator_settings.noise_params.contact_cov = 0.01 * np.eye(3, 3)
-# estimator_settings.dynamic_contact_estimation = True
+estimator_settings.dynamic_contact_estimation = True
 estimator_settings.contact_position_noise = 0.1 
 estimator_settings.contact_rotation_noise = 0.1 
 estimator_settings.lpf_gyro_accel_cutoff = 250
@@ -143,6 +143,8 @@ for i in range(30000):
                         estimator.joint_velocity_estimate.copy()])
     mpc.update_solution(t, TIME_STEP, q, v)
     print('t: ', t, ',   KKT error: ', mpc.KKT_error())
+    print(estimator.get_contact_estimator())
+    print(estimator.get_slip_estimator())
     robot.forward_kinematics(q)
     sim.apply_torque_command(mpc.get_initial_control_input().copy())
     t = t + TIME_STEP

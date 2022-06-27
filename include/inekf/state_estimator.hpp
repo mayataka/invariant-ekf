@@ -173,6 +173,10 @@ public:
   ///
   const std::vector<double>& getContactProbability() const;
 
+  const ContactEstimator& getContactEstimator() const;
+
+  const SlipEstimator& getSlipEstimator() const;
+
   ///
   /// @return const reference to the state estimator settings. 
   ///

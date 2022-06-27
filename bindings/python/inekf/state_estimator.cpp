@@ -40,6 +40,8 @@ PYBIND11_MODULE(state_estimator, m) {
     .def("update", &StateEstimator::update,
           py::arg("imu_gyro_raw"), py::arg("imu_lin_accel_raw"), 
           py::arg("qJ"), py::arg("dqJ"), py::arg("tauJ"))
+    .def("get_contact_estimator", &StateEstimator::getContactEstimator)
+    .def("get_slip_estimator", &StateEstimator::getSlipEstimator)
     .def_property_readonly("base_position_estimate", &StateEstimator::getBasePositionEstimate)
     .def_property_readonly("base_rotation_estimate", &StateEstimator::getBaseRotationEstimate)
     .def_property_readonly("base_quaternion_estimate", &StateEstimator::getBaseQuaternionEstimate)

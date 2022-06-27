@@ -101,6 +101,11 @@ const std::vector<double>& SlipEstimator::getSlipProbability() const {
 }
 
 
+const std::vector<double>& SlipEstimator::getSlipVelocityNorm() const {
+  return contact_velocity_norm_;
+}
+
+
 const std::vector<double>& SlipEstimator::getSlipVelocityCovariance() const {
   return slip_covariance_;  
 }
@@ -118,6 +123,81 @@ const std::vector<Eigen::Vector3d>& SlipEstimator::getContactSurfaceNormalEstima
 
 const std::vector<Eigen::Matrix3d>& SlipEstimator::getContactSurfaceEstimate() const {
   return contact_surface_estimate_;
+}
+
+
+void SlipEstimator::disp(std::ostream& os) const {
+  os << "Slip estimation:" << std::endl;
+  os << "  slip state: [";
+  for (int i=0; i<num_contacts_-1; ++i) {
+    os << std::boolalpha << getSlipState()[i].second << ", ";
+  }
+  os << std::boolalpha << getSlipState()[num_contacts_-1].second << "]" << std::endl;
+  /////////////////////////////////////////
+  os << "  slip probability: [";
+  for (int i=0; i<num_contacts_-1; ++i) {
+    os << getSlipProbability()[i] << ", ";
+  }
+  os << getSlipProbability()[num_contacts_-1] << "]" << std::endl;
+  /////////////////////////////////////////
+  os << "  contact velocity: [";
+  for (int i=0; i<num_contacts_-1; ++i) {
+    os << "[" << contact_velocity_[i].transpose() << "], ";
+  }
+  os << "[" << contact_velocity_[num_contacts_-1].transpose() << "]]" << std::endl;
+  /////////////////////////////////////////
+  os << "  slip velocity norm: [";
+  for (int i=0; i<num_contacts_-1; ++i) {
+    os << getSlipVelocityNorm()[i] << ", ";
+  }
+  os << getSlipVelocityNorm()[num_contacts_-1] << "]" << std::endl;
+  /////////////////////////////////////////
+  os << "  slip velocity covariance: [";
+  for (int i=0; i<num_contacts_-1; ++i) {
+    os << getSlipVelocityCovariance()[i] << ", ";
+  }
+  os << getSlipVelocityCovariance()[num_contacts_-1] << "]" << std::endl;
+  /////////////////////////////////////////
+  os << "  friction coefficient estimate: [";
+  for (int i=0; i<num_contacts_-1; ++i) {
+    os << getFrictionCoefficientEstimate()[i] << ", ";
+  }
+  os << getFrictionCoefficientEstimate()[num_contacts_-1] << "]" << std::endl;
+  /////////////////////////////////////////
+  os << "  contact surface normal estimate: [";
+  for (int i=0; i<num_contacts_-1; ++i) {
+    os << "[" << getContactSurfaceNormalEstimate()[i].transpose() << "], ";
+  }
+  os << "[" << getContactSurfaceNormalEstimate()[num_contacts_-1].transpose() << "]]" << std::endl;
+  /////////////////////////////////////////
+  os << "  contact surface estimate: [";
+  for (int i=0; i<num_contacts_-1; ++i) {
+    os << "[" << getContactSurfaceNormalEstimate()[i].transpose() << "], ";
+  }
+  os << "[" << getContactSurfaceNormalEstimate()[num_contacts_-1].transpose() << "]]" << std::endl;
+  /////////////////////////////////////////
+  os << "  contact surface estimate: [";
+  for (int i=0; i<num_contacts_-1; ++i) {
+    os << "[" << getContactSurfaceEstimate()[i].row(0) << "]  ";
+  }
+  os << "[" << getContactSurfaceEstimate()[num_contacts_-1].row(0) << "]" << std::endl;
+  os << "                               ";
+  for (int i=0; i<num_contacts_-1; ++i) {
+    os << "[" << getContactSurfaceEstimate()[i].row(1) << "]  ";
+  }
+  os << "[" << getContactSurfaceEstimate()[num_contacts_-1].row(1) << "]" << std::endl;
+  os << "                               ";
+  for (int i=0; i<num_contacts_-1; ++i) {
+    os << "[" << getContactSurfaceEstimate()[i].row(2) << "]  ";
+  }
+  os << "[" << getContactSurfaceEstimate()[num_contacts_-1].row(2) << "]" << std::endl;
+  os << "]" << std::flush;
+}
+
+
+std::ostream& operator<<(std::ostream& os, const SlipEstimator& e) {
+  e.disp(os);
+  return os;
 }
 
 } // namespace inekf

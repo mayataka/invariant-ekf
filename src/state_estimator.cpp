@@ -148,6 +148,7 @@ void StateEstimator::update(const Eigen::Vector3d& imu_gyro_raw,
   // Process kinematics measurements in InEKF
   inekf_.CorrectKinematics(leg_kinematics_);
   quat_ = Eigen::Quaterniond(getBaseRotationEstimate()).coeffs();
+  updateContactInfo(qJ, dqJ);
 }
 
 
@@ -157,6 +158,7 @@ void StateEstimator::updateContactInfo(const Eigen::VectorXd& qJ,
                                 getBaseQuaternionEstimate(),
                                 getBaseLinearVelocityEstimateLocal(),
                                 getBaseAngularVelocityEstimateLocal(), qJ, dqJ);
+  slip_estimator_.update(robot_model_, contact_estimator_);
 }
 
 
@@ -232,6 +234,16 @@ const std::vector<Eigen::Vector3d>& StateEstimator::getContactForceEstimate() co
 
 const std::vector<double>& StateEstimator::getContactProbability() const {
   return contact_estimator_.getContactProbability();
+}
+
+
+const ContactEstimator& StateEstimator::getContactEstimator() const {
+  return contact_estimator_;
+}
+
+
+const SlipEstimator& StateEstimator::getSlipEstimator() const {
+  return slip_estimator_;
 }
 
 

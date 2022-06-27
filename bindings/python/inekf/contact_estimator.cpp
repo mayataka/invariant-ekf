@@ -33,7 +33,12 @@ PYBIND11_MODULE(contact_estimator, m) {
     .def("get_contact_force_covariance", &ContactEstimator::getContactForceCovariance)
     .def("get_contact_surface_normal", &ContactEstimator::getContactSurfaceNormal)
     .def("set_contact_surface_normal", &ContactEstimator::setContactSurfaceNormal,
-          py::arg("contact_surface_normal"));
+          py::arg("contact_surface_normal"))
+     .def("__str__", [](const ContactEstimator& self) {
+        std::stringstream ss;
+        ss << self;
+        return ss.str();
+      });
 }
 
 } // namespace python
