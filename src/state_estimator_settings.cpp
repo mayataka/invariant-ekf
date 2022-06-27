@@ -15,9 +15,9 @@ StateEstimatorSettings StateEstimatorSettings::UnitreeA1(
   settings.contact_estimator_settings.contact_force_cov_alpha = 100.0;
   settings.contact_estimator_settings.contact_prob_threshold = 0.5;
 
-  settings.slip_estimator_settings.beta0 = {-20.0, -20.0, -20.0, -20.0};
-  settings.slip_estimator_settings.beta1 = {0.7, 0.7, 0.7, 0.7};
-  settings.slip_estimator_settings.slip_velocity_cov_alpha = 100.0;
+  settings.slip_estimator_settings.beta0 = {-5.0, -5.0, -5.0, -5.0};
+  settings.slip_estimator_settings.beta1 = {2.5, 2.5, 2.5, 2.5};
+  settings.slip_estimator_settings.slip_velocity_cov_alpha = 10.0;
   settings.slip_estimator_settings.slip_prob_threshold = 0.5;
 
   settings.noise_params.setGyroscopeNoise(0.01);
