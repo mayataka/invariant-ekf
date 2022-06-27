@@ -14,13 +14,13 @@ StateEstimator::StateEstimator(const StateEstimatorSettings& settings)
     lpf_dqJ_(settings.dt, settings.lpf_dqJ_cutoff, robot_model_.nJ()),
     lpf_ddqJ_(settings.dt, settings.lpf_ddqJ_cutoff, robot_model_.nJ()),
     lpf_tauJ_(settings.dt, settings.lpf_tauJ_cutoff, robot_model_.nJ()),
-    imu_gyro_raw_world_(Vector3d::Zero()), 
-    imu_gyro_raw_world_prev_(Vector3d::Zero()), 
-    imu_gyro_accel_world_(Vector3d::Zero()), 
+    imu_gyro_local_(Vector3d::Zero()), 
+    imu_gyro_world_(Vector3d::Zero()), 
+    imu_gyro_world_prev_(Vector3d::Zero()), 
     imu_gyro_accel_local_(Vector3d::Zero()), 
-    imu_lin_accel_raw_world_(Vector3d::Zero()), 
+    imu_gyro_accel_world_(Vector3d::Zero()), 
     imu_lin_accel_local_(Vector3d::Zero()),
-    imu_raw_(Vector6d::Zero()),
+    imu_lin_accel_world_(Vector3d::Zero()), 
     quat_(Eigen::Quaterniond::Identity().coeffs()) {
   const double contact_position_cov = settings.contact_position_noise * settings.contact_position_noise;
   const double contact_rotation_cov = settings.contact_rotation_noise * settings.contact_rotation_noise;
@@ -30,7 +30,6 @@ StateEstimator::StateEstimator(const StateEstimatorSettings& settings)
   for (int i=0; i<settings.contact_frames.size(); ++i) {
     leg_kinematics_.emplace_back(i, Eigen::Matrix4d::Identity(), cov_leg);
   }
-  imu_raw_.setZero();
 }
 
 
@@ -45,13 +44,13 @@ StateEstimator::StateEstimator()
     lpf_dqJ_(),
     lpf_ddqJ_(),
     lpf_tauJ_(),
-    imu_gyro_raw_world_(Vector3d::Zero()), 
-    imu_gyro_raw_world_prev_(Vector3d::Zero()), 
-    imu_gyro_accel_world_(Vector3d::Zero()), 
+    imu_gyro_local_(Vector3d::Zero()), 
+    imu_gyro_world_(Vector3d::Zero()), 
+    imu_gyro_world_prev_(Vector3d::Zero()), 
     imu_gyro_accel_local_(Vector3d::Zero()), 
-    imu_lin_accel_raw_world_(Vector3d::Zero()), 
+    imu_gyro_accel_world_(Vector3d::Zero()), 
     imu_lin_accel_local_(Vector3d::Zero()),
-    imu_raw_(Vector6d::Zero()),
+    imu_lin_accel_world_(Vector3d::Zero()), 
     quat_(Eigen::Quaterniond::Identity().coeffs()) {
 }
 
@@ -100,23 +99,22 @@ void StateEstimator::update(const Eigen::Vector3d& imu_gyro_raw,
                             const Eigen::Vector3d& imu_lin_accel_raw, 
                             const Eigen::VectorXd& qJ, 
                             const Eigen::VectorXd& dqJ, 
-                            const Eigen::VectorXd& tauJ, 
-                            const std::vector<double>& f_raw) {
+                            const Eigen::VectorXd& tauJ) {
   // Process IMU measurements in InEKF
-  imu_raw_.template head<3>() = imu_gyro_raw;
-  imu_raw_.template tail<3>() = imu_lin_accel_raw;
-  inekf_.Propagate(imu_raw_, settings_.dt);
+  inekf_.Propagate(imu_gyro_raw, imu_lin_accel_raw, settings_.dt);
   // Process IMU measurements in LPFs (linear acceleration)
-  imu_lin_accel_raw_world_.noalias() = getBaseRotationEstimate() * (imu_lin_accel_raw - getIMULinearAccelerationBiasEstimate());
-  lpf_lin_accel_world_.update(imu_lin_accel_raw_world_);
+  imu_gyro_local_ = imu_gyro_raw - getIMUGyroBiasEstimate();
+  imu_gyro_world_.noalias() = getBaseRotationEstimate() * imu_gyro_local_;
+  imu_lin_accel_local_ = imu_lin_accel_raw - getIMULinearAccelerationBiasEstimate();
+  imu_lin_accel_world_.noalias() = getBaseRotationEstimate() * imu_lin_accel_local_;
+  lpf_lin_accel_world_.update(imu_lin_accel_world_);
   imu_lin_accel_local_.noalias() = getBaseRotationEstimate().transpose() * lpf_lin_accel_world_.getEstimate();
   // Process IMU measurements in LPFs (angular acceleration via a finite difference)
   if (settings_.dynamic_contact_estimation) {
-    imu_gyro_raw_world_.noalias() = getBaseRotationEstimate() * (imu_gyro_raw - getIMUGyroBiasEstimate());
-    imu_gyro_accel_world_.noalias() = (imu_gyro_raw_world_ - imu_gyro_raw_world_prev_) / settings_.dt;
+    imu_gyro_accel_world_.noalias() = (imu_gyro_world_ - imu_gyro_world_prev_) / settings_.dt;
     lpf_gyro_accel_world_.update(imu_gyro_accel_world_);
     imu_gyro_accel_local_.noalias() = getBaseRotationEstimate().transpose() * lpf_gyro_accel_world_.getEstimate();
-    imu_gyro_raw_world_prev_ = imu_gyro_raw_world_;
+    imu_gyro_world_prev_ = imu_gyro_world_;
   }
   // Process joint measurements in LPFs 
   if (settings_.dynamic_contact_estimation) {
@@ -135,7 +133,7 @@ void StateEstimator::update(const Eigen::Vector3d& imu_gyro_raw,
   else {
     robot_model_.updateLegDynamics(qJ, dqJ);
   }
-  contact_estimator_.update(robot_model_, lpf_tauJ_.getEstimate(), f_raw);
+  contact_estimator_.update(robot_model_, lpf_tauJ_.getEstimate());
   inekf_.setContacts(contact_estimator_.getContactState());
   const double contact_force_cov = contact_estimator_.getContactForceCovariance();
   for (int i=0; i<robot_model_.numContacts(); ++i) {
@@ -147,6 +145,15 @@ void StateEstimator::update(const Eigen::Vector3d& imu_gyro_raw,
   // Process kinematics measurements in InEKF
   inekf_.CorrectKinematics(leg_kinematics_);
   quat_ = Eigen::Quaterniond(getBaseRotationEstimate()).coeffs();
+}
+
+
+void StateEstimator::updateContactInfo(const Eigen::VectorXd& qJ, 
+                                       const Eigen::VectorXd& dqJ) {
+  robot_model_.updateKinematics(getBasePositionEstimate(), 
+                                getBaseQuaternionEstimate(),
+                                getBaseLinearVelocityEstimateLocal(),
+                                getBaseAngularVelocityEstimateLocal(), qJ, dqJ);
 }
 
 
@@ -179,12 +186,12 @@ const Eigen::Vector3d StateEstimator::getBaseLinearVelocityEstimateLocal() const
 
 
 const Eigen::Vector3d& StateEstimator::getBaseAngularVelocityEstimateWorld() const {
-  return imu_gyro_raw_world_;
+  return imu_gyro_world_;
 }
 
 
-Eigen::Vector3d StateEstimator::getBaseAngularVelocityEstimateLocal() const {
-  return (imu_raw_.template head<3>() - getIMUGyroBiasEstimate());
+const Eigen::Vector3d& StateEstimator::getBaseAngularVelocityEstimateLocal() const {
+  return imu_gyro_local_;
 }
 
 

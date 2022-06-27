@@ -15,6 +15,10 @@ pinocchio::Model RobotModel::buildFloatingBaseModel(
 RobotModel::RobotModel(const std::string& path_to_urdf, const int imu_frame,
                        const std::vector<int>& contact_frames) 
   : RobotModel(buildFloatingBaseModel(path_to_urdf), imu_frame, contact_frames) {
+  contact_velocity_.clear();
+  for (int i=0; i<4; ++i) {
+    contact_velocity_.push_back(Eigen::Vector3d::Zero());
+  }
 }
 
 
@@ -22,6 +26,10 @@ RobotModel::RobotModel(const std::string& path_to_urdf,
                        const std::string& imu_frame,
                        const std::vector<std::string>& contact_frames) 
   : RobotModel(buildFloatingBaseModel(path_to_urdf), imu_frame, contact_frames) {
+  contact_velocity_.clear();
+  for (int i=0; i<4; ++i) {
+    contact_velocity_.push_back(Eigen::Vector3d::Zero());
+  }
 }
 
 
@@ -43,6 +51,10 @@ RobotModel::RobotModel(const pinocchio::Model& pin_model, const int imu_frame,
   tau_ = Eigen::VectorXd(model_.nv);
   for (int i=0; i<contact_frames.size(); ++i) {
     jac_6d_.push_back(Eigen::MatrixXd::Zero(6, model_.nv));
+  }
+  contact_velocity_.clear();
+  for (int i=0; i<4; ++i) {
+    contact_velocity_.push_back(Eigen::Vector3d::Zero());
   }
 }
 
@@ -92,6 +104,10 @@ RobotModel::RobotModel(const pinocchio::Model& pin_model,
     }
     contact_frames_.push_back(model_.getFrameId(e));
   }
+  contact_velocity_.clear();
+  for (int i=0; i<4; ++i) {
+    contact_velocity_.push_back(Eigen::Vector3d::Zero());
+  }
 }
 
 
@@ -104,7 +120,8 @@ RobotModel::RobotModel()
     v_(),
     a_(),
     tau_(),
-    jac_6d_() {
+    jac_6d_(),
+    contact_velocity_() {
 }
 
 
@@ -161,6 +178,10 @@ void RobotModel::updateKinematics(const Eigen::Vector3d& base_pos,
   pinocchio::computeJointJacobians(model_, data_, q_);
   for (int i=0; i<contact_frames_.size(); ++i) {
     pinocchio::getFrameJacobian(model_, data_, contact_frames_[i], rf, jac_6d_[i]);
+  }
+  for (int i=0; i<4; ++i) {
+    contact_velocity_[i] = pinocchio::getFrameVelocity(model_, data_, contact_frames_[i], 
+                                                       pinocchio::ReferenceFrame::WORLD).linear();
   }
 }
 

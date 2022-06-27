@@ -188,6 +188,11 @@ public:
   const Eigen::Matrix3d& getContactRotation(const int contact_id) const;
 
   ///
+  /// @return const reference to the contact position. 
+  ///
+  const Eigen::Vector3d& getContactVelocity(const int contact_id) const;
+
+  ///
   /// @return const reference to the contact Jacobian with respect to the 
   /// generalized coordinate (base pos + base orn + joint positions). 
   /// Size is 3 x RobotModel::nv().
@@ -247,6 +252,7 @@ private:
   std::vector<Eigen::MatrixXd, Eigen::aligned_allocator<Eigen::MatrixXd>> jac_6d_;
   int imu_frame_;
   std::vector<int> contact_frames_;
+  std::vector<Eigen::Vector3d> contact_velocity_;
 
 };
 

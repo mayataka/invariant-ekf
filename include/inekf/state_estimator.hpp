@@ -28,6 +28,7 @@ public:
   using Vector3d = Eigen::Matrix<double, 3, 1>;
   using Vector4d = Eigen::Matrix<double, 4, 1>;
   using Vector6d = Eigen::Matrix<double, 6, 1>;
+  using VectorXd = Eigen::MatrixXd;
   using Matrix3d = Eigen::Matrix<double, 3, 3>;
   using Matrix6d = Eigen::Matrix<double, 6, 6>;
 
@@ -87,12 +88,13 @@ public:
   /// @param[in] qJ Raw measurement of the joint positions. 
   /// @param[in] dqJ Raw measurement of the joint velocities. 
   /// @param[in] tauJ Raw measurement of the joint torques. 
-  /// @param[in] f_raw Raw measurement of the foot force sensor. 
   ///
   void update(const Eigen::Vector3d& imu_gyro_raw, 
               const Eigen::Vector3d& imu_lin_accel_raw, 
               const Eigen::VectorXd& qJ, const Eigen::VectorXd& dqJ, 
-              const Eigen::VectorXd& tauJ, const std::vector<double>& f_raw={});
+              const Eigen::VectorXd& tauJ);
+
+  void updateContactInfo(const Eigen::VectorXd& qJ, const Eigen::VectorXd& dqJ);
 
   ///
   /// @return const reference to the base position estimate.
@@ -133,7 +135,7 @@ public:
   /// @return const reference to the base angular velocity estimate expressed in 
   /// the local frame.
   ///
-  Eigen::Vector3d getBaseAngularVelocityEstimateLocal() const;
+  const Eigen::Vector3d& getBaseAngularVelocityEstimateLocal() const;
 
   ///
   /// @return const reference to the IMU gyro bias estimate. 
@@ -185,9 +187,9 @@ private:
   ContactEstimator contact_estimator_;
   LowPassFilter<double, 3> lpf_gyro_accel_world_, lpf_lin_accel_world_;
   LowPassFilter<double, Eigen::Dynamic> lpf_dqJ_, lpf_ddqJ_, lpf_tauJ_;
-  Vector3d imu_gyro_raw_world_, imu_gyro_raw_world_prev_, imu_gyro_accel_world_, 
-           imu_gyro_accel_local_, imu_lin_accel_raw_world_, imu_lin_accel_local_;
-  Vector6d imu_raw_;
+  Vector3d imu_gyro_local_, imu_gyro_world_, imu_gyro_world_prev_, 
+           imu_gyro_accel_local_, imu_gyro_accel_world_, 
+           imu_lin_accel_local_, imu_lin_accel_world_;
   Vector4d quat_;
 };
 

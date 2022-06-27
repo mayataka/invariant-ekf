@@ -13,11 +13,7 @@ StateEstimatorSettings StateEstimatorSettings::UnitreeA1(
   settings.contact_estimator_settings.beta0 = {-20.0, -20.0, -20.0, -20.0};
   settings.contact_estimator_settings.beta1 = {0.7, 0.7, 0.7, 0.7};
   settings.contact_estimator_settings.contact_force_cov_alpha = 100.0;
-  settings.contact_estimator_settings.force_sensor_bias = {0.0, 0.0, 0.0, 0.0};
-  settings.contact_estimator_settings.schmitt_trigger_settings.lower_threshold   = 0;
-  settings.contact_estimator_settings.schmitt_trigger_settings.higher_threshold  = 0;
-  settings.contact_estimator_settings.schmitt_trigger_settings.lower_time_delay  = 0;
-  settings.contact_estimator_settings.schmitt_trigger_settings.higher_time_delay = 0;
+  settings.contact_estimator_settings.contact_prob_threshold = 0.5;
 
   settings.noise_params.setGyroscopeNoise(0.01);
   settings.noise_params.setAccelerometerNoise(0.1);

@@ -6,55 +6,54 @@ namespace inekf {
 ContactEstimator::ContactEstimator(const RobotModel& robot_model,
                                    const ContactEstimatorSettings& settings)
   : settings_(settings),
-    contact_force_normal_estimate_(robot_model.numContacts(), 0),
-    contact_force_normal_estimate_prev_(robot_model.numContacts(), 0),
-    contact_probability_(robot_model.numContacts(), 0),
-    contact_covariance_(robot_model.numContacts(), 0),
     contact_force_estimate_(robot_model.numContacts(), Eigen::Vector3d::Zero()),
     contact_surface_normal_(robot_model.numContacts(), Eigen::Vector3d::Zero()),
-    schmitt_trigger_(robot_model.numContacts(), 
-                     SchmittTrigger(settings.schmitt_trigger_settings)),
+    normal_contact_force_estimate_(robot_model.numContacts(), 0),
+    normal_contact_force_estimate_prev_(robot_model.numContacts(), 0),
+    contact_probability_(robot_model.numContacts(), 0),
+    contact_covariance_(robot_model.numContacts(), 0),
+    contact_state_(),
     num_contacts_(robot_model.numContacts()) {
   for (auto& e : contact_surface_normal_) {
     e << 0, 0, 1;
+  }
+  contact_state_.clear();
+  for (int i=0; i<num_contacts_; ++i) {
+    contact_state_.push_back(std::pair<int, bool>(i, false));
   }
 }
 
 
 ContactEstimator::ContactEstimator() 
   : settings_(),
-    contact_force_normal_estimate_(),
-    contact_force_normal_estimate_prev_(),
-    contact_probability_(),
-    contact_covariance_(),
     contact_force_estimate_(),
     contact_surface_normal_(),
-    schmitt_trigger_(),
+    normal_contact_force_estimate_(),
+    normal_contact_force_estimate_prev_(),
+    contact_probability_(),
+    contact_covariance_(),
+    contact_state_(),
     num_contacts_(0) {
 }
 
 
 void ContactEstimator::reset() {
-  for (int i=0; i<num_contacts_; ++i) {
-    schmitt_trigger_[i].reset();
-  }
 }
 
 
 void ContactEstimator::update(const RobotModel& robot_model, 
-                              const Eigen::VectorXd& tauJ, 
-                              const std::vector<double>& force_sensor_raw) {
+                              const Eigen::VectorXd& tauJ) {
   // Estimate contact force from robot dynamics via logistic regression
   for (int i=0; i<num_contacts_; ++i) {
     contact_force_estimate_[i].noalias() 
         = - robot_model.getJointContactJacobian(i).template block<3, 3>(0, i*3).transpose().inverse() 
             * (tauJ.template segment<3>(3*i)-robot_model.getJointInverseDynamics().template segment<3>(3*i));
-    contact_force_normal_estimate_[i] = contact_force_estimate_[i].dot(contact_surface_normal_[i]);
+    normal_contact_force_estimate_[i] = contact_force_estimate_[i].dot(contact_surface_normal_[i]);
   }
   // Contact probability 
   for (int i=0; i<num_contacts_; ++i) {
     contact_probability_[i]
-        = 1.0 / (1.0 + std::exp(- settings_.beta1[i] * contact_force_normal_estimate_[i]
+        = 1.0 / (1.0 + std::exp(- settings_.beta1[i] * normal_contact_force_estimate_[i]
                                 - settings_.beta0[i]));
     if (std::isnan(contact_probability_[i]) || std::isinf(contact_probability_[i])) {
       contact_probability_[i] = 0;
@@ -62,33 +61,25 @@ void ContactEstimator::update(const RobotModel& robot_model,
   }
   // Contact covariance
   for (int i=0; i<num_contacts_; ++i) {
-    const double df = contact_force_normal_estimate_[i] - contact_force_normal_estimate_prev_[i];
+    const double df = normal_contact_force_estimate_[i] - normal_contact_force_estimate_prev_[i];
     contact_covariance_[i] = settings_.contact_force_cov_alpha * df * df;
-    contact_force_normal_estimate_prev_[i] = contact_force_normal_estimate_[i];
+    normal_contact_force_estimate_prev_[i] = normal_contact_force_estimate_[i];
   }
-  // // TODO: Fuse the above contact force estimate with force sensor measurements.
-  // for (int i=0; i<num_contacts_; ++i) {
-  //   schmitt_trigger_[i].update(force_sensor_raw[i]);
-  // }
+  contact_state_.clear();
+  for (int i=0; i<num_contacts_; ++i) {
+    contact_state_.push_back(
+        std::pair<int, bool>(i, (contact_probability_[i] >= settings_.contact_prob_threshold)));
+  }
 }
 
 
 void ContactEstimator::setParameters(const ContactEstimatorSettings& settings) {
   settings_ = settings;
-  for (auto& e : schmitt_trigger_) {
-    e.setParameters(settings.schmitt_trigger_settings);
-  }
 }
 
 
-std::vector<std::pair<int, bool>> ContactEstimator::getContactState(
-    const double prob_threshold) const {
-  std::vector<std::pair<int, bool>> contact_state;
-  for (int i=0; i<num_contacts_; ++i) {
-    contact_state.push_back(
-        std::pair<int, bool>(i, (contact_probability_[i] >= prob_threshold)));
-  }
-  return contact_state;
+const std::vector<std::pair<int, bool>>& ContactEstimator::getContactState() const {
+  return contact_state_;
 }
 
 
@@ -97,8 +88,8 @@ const std::vector<Eigen::Vector3d>& ContactEstimator::getContactForceEstimate() 
 }
 
 
-const std::vector<double>& ContactEstimator::getContactForceNormalEstimate() const {
-  return contact_force_normal_estimate_;
+const std::vector<double>& ContactEstimator::getNormalContactForceEstimate() const {
+  return normal_contact_force_estimate_;
 }
 
 
@@ -107,9 +98,9 @@ const std::vector<double>& ContactEstimator::getContactProbability() const {
 }
 
 
-double ContactEstimator::getContactForceCovariance(const double prob_threshold) const {
+double ContactEstimator::getContactForceCovariance() const {
   int num_active_contacts = 0;
-  for (const auto e : getContactState(prob_threshold)) {
+  for (const auto e : getContactState()) {
     if (e.second) {
       ++num_active_contacts;
     }
@@ -128,11 +119,6 @@ double ContactEstimator::getContactForceCovariance(const double prob_threshold) 
 }
 
 
-const std::vector<double>& ContactEstimator::getForceSensorBias() const {
-  return settings_.force_sensor_bias;
-}
-
-
 const std::vector<Eigen::Vector3d>& ContactEstimator::getContactSurfaceNormal() const {
   return contact_surface_normal_;
 }
@@ -142,13 +128,6 @@ void ContactEstimator::setContactSurfaceNormal(
     const std::vector<Eigen::Vector3d>& contact_surface_normal) {
   assert(contact_surface_normal_.size() == contact_surface_normal.size());
   contact_surface_normal_ = contact_surface_normal;
-}
-
-
-void ContactEstimator::setForceSensorBias(
-    const std::vector<double>& force_sensor_bias) {
-  assert(settings_.force_sensor_bias.size() == force_sensor_bias.size());
-  settings_.force_sensor_bias = force_sensor_bias;
 }
 
 } // namespace inekf
