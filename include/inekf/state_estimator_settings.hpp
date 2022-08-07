@@ -32,7 +32,7 @@ public:
   /// 
   /// @brief Contact estimator settings. 
   ///
-  ContactEstimatorSettings contact_estimator_settings;
+  ContactEstimatorSettings contact_estimator;
 
   /// 
   /// @brief Slip estimator settings. 

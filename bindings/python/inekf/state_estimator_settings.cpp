@@ -18,7 +18,7 @@ PYBIND11_MODULE(state_estimator_settings, m) {
                  py::arg("path_to_urdf"), py::arg("dt"))
     .def_readwrite("path_to_urdf", &StateEstimatorSettings::path_to_urdf)
     .def_readwrite("contact_frames", &StateEstimatorSettings::contact_frames)
-    .def_readwrite("contact_estimator_settings", &StateEstimatorSettings::contact_estimator_settings)
+    .def_readwrite("contact_estimator", &StateEstimatorSettings::contact_estimator)
     .def_readwrite("slip_estimator_settings", &StateEstimatorSettings::slip_estimator_settings)
     .def_readwrite("noise_params", &StateEstimatorSettings::noise_params)
     .def_readwrite("dynamic_contact_estimation", &StateEstimatorSettings::dynamic_contact_estimation)

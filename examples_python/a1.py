@@ -15,9 +15,9 @@ sim = a1_simulator.A1Simulator(PATH_TO_URDF, TIME_STEP,
                                ddqJ_noise=1.0, tauJ_noise=0.1)
 
 estimator_settings = inekf.StateEstimatorSettings.UnitreeA1(PATH_TO_URDF, TIME_STEP)
-estimator_settings.contact_estimator_settings.beta0 = [-20.0, -20.0, -20.0, -20.0]
-estimator_settings.contact_estimator_settings.beta1 = [0.7, 0.7, 0.7, 0.7]
-estimator_settings.contact_estimator_settings.contact_force_cov_alpha = 10.0
+estimator_settings.contact_estimator.beta0 = [-20.0, -20.0, -20.0, -20.0]
+estimator_settings.contact_estimator.beta1 = [0.7, 0.7, 0.7, 0.7]
+estimator_settings.contact_estimator.contact_force_cov_alpha = 10.0
 estimator_settings.noise_params.contact_cov = 0.01 * np.eye(3, 3)
 estimator_settings.contact_position_noise = 0.1 
 estimator_settings.contact_rotation_noise = 0.1 

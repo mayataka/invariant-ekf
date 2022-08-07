@@ -10,10 +10,10 @@ StateEstimatorSettings StateEstimatorSettings::UnitreeA1(
   settings.imu_frame = 46;
   settings.contact_frames = {14, 24, 34, 44}; // LF, RF, LH, RH
 
-  settings.contact_estimator_settings.beta0 = {-20.0, -20.0, -20.0, -20.0};
-  settings.contact_estimator_settings.beta1 = {0.7, 0.7, 0.7, 0.7};
-  settings.contact_estimator_settings.contact_force_cov_alpha = 100.0;
-  settings.contact_estimator_settings.contact_prob_threshold = 0.5;
+  settings.contact_estimator.beta0 = {-20.0, -20.0, -20.0, -20.0};
+  settings.contact_estimator.beta1 = {0.7, 0.7, 0.7, 0.7};
+  settings.contact_estimator.contact_force_cov_alpha = 100.0;
+  settings.contact_estimator.contact_prob_threshold = 0.5;
 
   settings.slip_estimator_settings.beta0 = {-5.0, -5.0, -5.0, -5.0};
   settings.slip_estimator_settings.beta1 = {2.5, 2.5, 2.5, 2.5};
