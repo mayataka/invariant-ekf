@@ -3,10 +3,10 @@
 #include <pybind11/eigen.h>
 #include <pybind11/numpy.h>
 
-#include "inekf/noise_params.hpp"
+#include "legged_state_estimator/inekf/noise_params.hpp"
 
 
-namespace inekf {
+namespace legged_state_estimator {
 namespace python {
 
 namespace py = pybind11;
@@ -27,4 +27,4 @@ PYBIND11_MODULE(noise_params, m) {
 }
 
 } // namespace python
-} // namespace inekf
+} // namespace legged_state_estimator

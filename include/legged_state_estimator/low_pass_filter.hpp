@@ -7,10 +7,10 @@
 
 #include "Eigen/Core"
 
-#include "inekf/macros.hpp"
+#include "legged_state_estimator/macros.hpp"
 
 
-namespace inekf {
+namespace legged_state_estimator {
 
 template <typename Scalar, int dim=Eigen::Dynamic>
 class LowPassFilter {
@@ -21,23 +21,17 @@ public:
                 const int dynamic_size=0)
     : estimate_(),
       alpha_(0.0) {
-    try {
-      if (sampling_time <= 0) {
-        throw std::out_of_range(
-            "Invalid argment: sampling_time must be positive!");
-      }
-      if (cutoff_freq <= 0) {
-        throw std::out_of_range(
-            "Invalid argment: cutoff_freq must be positive!");
-      }
-      if (dim == Eigen::Dynamic && dynamic_size <= 0) {
-        throw std::out_of_range(
-            "Invalid argment: dynamic_size must be positive!");
-      }
+    if (sampling_time <= 0) {
+      throw std::out_of_range(
+          "Invalid argment: sampling_time must be positive!");
     }
-    catch(const std::exception& e) {
-      std::cerr << e.what() << '\n';
-      std::exit(EXIT_FAILURE);
+    if (cutoff_freq <= 0) {
+      throw std::out_of_range(
+          "Invalid argment: cutoff_freq must be positive!");
+    }
+    if (dim == Eigen::Dynamic && dynamic_size <= 0) {
+      throw std::out_of_range(
+          "Invalid argment: dynamic_size must be positive!");
     }
     const Scalar tau = 1.0 / (2.0*M_PI*cutoff_freq);
     alpha_ = tau / (tau + sampling_time);
@@ -63,10 +57,12 @@ public:
   }
 
   void reset(const Vector& estimate) {
+    assert(estimate_.size() == estimate.size());
     estimate_ = estimate;
   }
 
   void update(const Vector& obs) {
+    assert(estimate_.size() == obs.size());
     estimate_.array() *= alpha_;
     estimate_.noalias() += (1.0-alpha_) * obs;
   }
@@ -82,6 +78,6 @@ private:
   Scalar alpha_;
 };
 
-} // namespace inekf 
+} // namespace legged_state_estimator 
 
 #endif // INEKF_LOW_PASS_FILTER_HPP_ 

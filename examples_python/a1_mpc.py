@@ -1,13 +1,13 @@
 import a1_simulator
 import numpy as np
-import inekf 
+import legged_state_estimator 
 from scipy.spatial.transform import Rotation
 import matplotlib.pyplot as plt
 import mpc_factory 
 
 
 PLOT = False
-PLOT = True
+# PLOT = True
 PATH_TO_URDF = "a1_description/urdf/a1_friction.urdf"
 # PATH_TO_URDF = "a1_description/urdf/a1.urdf"
 TIME_STEP = 0.0025
@@ -16,22 +16,33 @@ sim = a1_simulator.A1Simulator(PATH_TO_URDF, TIME_STEP,
                                imu_gyro_bias_noise=0.00001,
                                imu_lin_accel_bias_noise=0.0001,
                                qJ_noise=0.001, dqJ_noise=0.1, 
-                               tauJ_noise=0.1)
+                               tauJ_noise=0.1, terrain=False)
+                            #    tauJ_noise=0.1, terrain=True)
+sim.set_friction_coefficient(1.0)
 
-estimator_settings = inekf.StateEstimatorSettings.UnitreeA1(PATH_TO_URDF, TIME_STEP)
-estimator_settings.contact_estimator_settings.beta0 = [-20.0, -20.0, -20.0, -20.0]
-estimator_settings.contact_estimator_settings.beta1 = [0.7, 0.7, 0.7, 0.7]
-estimator_settings.contact_estimator_settings.contact_force_cov_alpha = 10.0
+estimator_settings = legged_state_estimator.LeggedStateEstimatorSettings.UnitreeA1(PATH_TO_URDF, TIME_STEP)
+estimator_settings.contact_estimator.beta0 = [-20.0, -20.0, -20.0, -20.0]
+estimator_settings.contact_estimator.beta1 = [0.7, 0.7, 0.7, 0.7]
+estimator_settings.contact_estimator.contact_force_cov_alpha = 10.0
+estimator_settings.slip_estimator_settings.beta0 = [-5.0, -5.0, -5.0, -5.0]
+estimator_settings.slip_estimator_settings.beta1 = [25.0, 25.0, 25.0, 25.0]
+estimator_settings.slip_estimator_settings.slip_velocity_cov_alpha = 10.0
+estimator_settings.slip_estimator_settings.lpf_contact_surface_normal_cutoff = 10.0
+estimator_settings.slip_estimator_settings.lpf_friction_coefficient_cutoff = 10.0
 estimator_settings.noise_params.contact_cov = 0.01 * np.eye(3, 3)
-# estimator_settings.dynamic_contact_estimation = True
+estimator_settings.dynamic_contact_estimation = True
 estimator_settings.contact_position_noise = 0.1 
 estimator_settings.contact_rotation_noise = 0.1 
-estimator_settings.lpf_gyro_accel_cutoff = 250
-estimator_settings.lpf_lin_accel_cutoff  = 250
-estimator_settings.lpf_dqJ_cutoff  = 10
-estimator_settings.lpf_ddqJ_cutoff = 5
-estimator_settings.lpf_tauJ_cutoff = 10
-estimator = inekf.StateEstimator(estimator_settings)
+estimator_settings.lpf_gyro_accel_cutoff = 250.0
+estimator_settings.lpf_lin_accel_cutoff  = 250.0
+estimator_settings.lpf_dqJ_cutoff  = 10.0
+estimator_settings.lpf_ddqJ_cutoff = 5.0
+estimator_settings.lpf_tauJ_cutoff = 10.0
+estimator = legged_state_estimator.LeggedStateEstimator(estimator_settings)
+
+estimator.reset_contact_surface_normal_estimate(
+    [np.array([0., 0., 1.]), np.array([0., 0., 1.]), np.array([0., 0., 1.]), np.array([0., 0., 1.])])
+estimator.reset_friction_coefficient_estimate([0.6, 0.6, 0.6, 0.6])
 
 sim.init()
 sim.set_camera(2.0, 45, -10, [0, 0, 0.318]+np.array([0.1, 0.5, 0.]))
@@ -108,11 +119,6 @@ if PLOT:
 t = 0
 for i in range(30000):
     sim.step_simulation()
-    print('F_LF: ', sim.contact_info_LF.force)
-    print('F_LH: ', sim.contact_info_LH.force)
-    print('F_RF: ', sim.contact_info_RF.force)
-    print('F_RH: ', sim.contact_info_RH.force)
-    
     # estimate state
     imu_gyro_raw, imu_lin_acc_raw = sim.get_imu_state()
     qJ, dqJ, tauJ = sim.get_joint_state()
@@ -143,6 +149,10 @@ for i in range(30000):
                         estimator.joint_velocity_estimate.copy()])
     mpc.update_solution(t, TIME_STEP, q, v)
     print('t: ', t, ',   KKT error: ', mpc.KKT_error())
+    print(estimator.get_contact_estimator())
+    print(estimator.get_slip_estimator())
+    a1_simulator.print_contact_info([sim.contact_info_LF, sim.contact_info_LH, 
+                                     sim.contact_info_RF, sim.contact_info_RH])
     robot.forward_kinematics(q)
     sim.apply_torque_command(mpc.get_initial_control_input().copy())
     t = t + TIME_STEP

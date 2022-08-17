@@ -4,14 +4,14 @@
 #include <string>
 #include <vector>
 
-#include "inekf/macros.hpp"
-#include "inekf/noise_params.hpp"
-#include "inekf/contact_estimator.hpp"
+#include "legged_state_estimator/inekf/noise_params.hpp"
+#include "legged_state_estimator/contact_estimator.hpp"
+#include "legged_state_estimator/slip_estimator.hpp"
 
 
-namespace inekf {
+namespace legged_state_estimator {
 
-struct StateEstimatorSettings {
+struct LeggedStateEstimatorSettings {
 public:
   /// 
   /// @brief Path to the URDF file.
@@ -31,7 +31,12 @@ public:
   /// 
   /// @brief Contact estimator settings. 
   ///
-  ContactEstimatorSettings contact_estimator_settings;
+  ContactEstimatorSettings contact_estimator;
+
+  /// 
+  /// @brief Slip estimator settings. 
+  ///
+  SlipEstimatorSettings slip_estimator_settings;
 
   /// 
   /// @brief Noise parameters (covariances) of InEKF. 
@@ -93,11 +98,11 @@ public:
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
-  static StateEstimatorSettings UnitreeA1(const std::string& path_to_urdf, 
+  static LeggedStateEstimatorSettings UnitreeA1(const std::string& path_to_urdf, 
                                           const double dt);
 
 };
 
-} // namespace inekf
+} // namespace legged_state_estimator
 
 #endif // INEKF_STATE_ESTIMATOR_SETTINGS_HPP_

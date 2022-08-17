@@ -14,13 +14,13 @@
 #include <iostream>
 #include <chrono>
 #include <Eigen/Dense>
-#include "inekf/inekf.hpp"
+#include "legged_state_estimator/inekf/inekf.hpp"
 
 #define DT_MIN 1e-6
 #define DT_MAX 1
 
 using namespace std;
-using namespace inekf;
+using namespace legged_state_estimator;
 
 int main() {
     // Initialize filter

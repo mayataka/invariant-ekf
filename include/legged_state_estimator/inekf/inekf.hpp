@@ -23,16 +23,17 @@
 #include "Eigen/LU"
 #include "unsupported/Eigen/MatrixFunctions"
 
-#include "inekf/robot_state.hpp"
-#include "inekf/noise_params.hpp"
-#include "inekf/lie_group.hpp"
-#include "inekf/observations.hpp"
-#include "inekf/macros.hpp"
+#include "legged_state_estimator/inekf/inekf_state.hpp"
+#include "legged_state_estimator/inekf/noise_params.hpp"
+#include "legged_state_estimator/inekf/lie_group.hpp"
+#include "legged_state_estimator/inekf/observations.hpp"
+#include "legged_state_estimator/inekf/error_type.hpp"
+#include "legged_state_estimator/inekf/state_transition_matrix.hpp"
+#include "legged_state_estimator/inekf/discrete_noise_matrix.hpp"
+#include "legged_state_estimator/macros.hpp"
 
 
-namespace inekf {
-
-enum ErrorType {LeftInvariant, RightInvariant};
+namespace legged_state_estimator {
 
 class InEKF {
 public:
@@ -55,20 +56,20 @@ the default (identity rotation, zero velocity, zero position).
 the default.
     * @param state: The state to be assigned.
     */
-  InEKF(const RobotState& state);
+  InEKF(const InEKFState& state);
   /**
    * Initialize filter with state and noise parameters.
    * @param state: The state to be assigned.
    * @param params: The noise parameters to be assigned.
    */        
-  InEKF(const RobotState& state, const NoiseParams& params);
+  InEKF(const InEKFState& state, const NoiseParams& params);
   /**
    * Initialize filter with state, noise, and error type.
    * @param state: The state to be assigned.
    * @param params: The noise parameters to be assigned.
    * @param error_type: The type of invariant error to be used (affects covariance).
    */       
-  InEKF(const RobotState& state, const NoiseParams& params, const ErrorType error_type);
+  InEKF(const InEKFState& state, const NoiseParams& params, const ErrorType error_type);
 
   INEKF_USE_DEFAULT_DESTTUCTOR(InEKF);
   INEKF_USE_DEFAULT_COPY_CONSTRUCTOR(InEKF);
@@ -86,7 +87,7 @@ the default.
   /**
    * Gets the current state estimate.
    */
-  const RobotState& getState() const;
+  const InEKFState& getState() const;
   /**
    * Gets the current noise parameters.
    */
@@ -126,7 +127,7 @@ the default.
    * Sets the current state estimate
    * @param state: The state estimate to be assigned.
    */
-  void setState(const RobotState& state);
+  void setState(const InEKFState& state);
   /**
    * Sets the current noise parameters
    * @param params: The noise parameters to be assigned.
@@ -236,7 +237,7 @@ the default.
 private:
   ErrorType error_type_ = ErrorType::LeftInvariant; 
   bool estimate_bias_ = true;  
-  RobotState state_;
+  InEKFState state_;
   NoiseParams noise_params_;
   Eigen::Vector3d g_; // Gravity vector in world frame (z-up)
   std::map<int,bool> contacts_;
@@ -245,9 +246,11 @@ private:
   std::map<int,int> estimated_landmarks_;
   Eigen::Vector3d magnetic_field_;
   Eigen::LDLT<Eigen::MatrixXd> ldlt_;
-
-  Eigen::MatrixXd StateTransitionMatrix(const Eigen::Vector3d& w, const Eigen::Vector3d& a, double dt);
-  Eigen::MatrixXd DiscreteNoiseMatrix(const Eigen::MatrixXd& Phi, double dt);
+  StateTransitionMatrix state_transition_matrix_;
+  DiscreteNoiseMatrix discrete_noise_matrix_;
+  Eigen::MatrixXd P_pred_, X_pred_;
+  Eigen::Vector3d phi_;
+  Eigen::Matrix3d G0_, G1_, G2_;
 
   // Corrects state using invariant observation models
   void CorrectRightInvariant(const Observation& obs);
@@ -257,6 +260,6 @@ private:
   // void CorrectFullState(const Observation& obs); // TODO
 };
 
-} // namespace inekf 
+} // namespace legged_state_estimator 
 
 #endif // INEKF_INEKF_HPP_

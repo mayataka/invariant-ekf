@@ -12,15 +12,15 @@ class ContactInfo(object):
         self.active = False
         self.normal = np.array([0., 0., 1.])
         self.distance = 0.0
-        self.normal_force = 0.0
         self.force = np.zeros(3)
+        self.normal_force = 0.0
 
     def deactivate(self):
         self.active = False
         self.normal = np.array([0., 0., 1.])
         self.distance = 0.0
-        self.normal_force = 0.0
         self.force = np.zeros(3)
+        self.normal_force = 0.0
 
     def set_from_pybullet(self, contacts):
         self.deactivate()
@@ -30,8 +30,27 @@ class ContactInfo(object):
                 self.active = True
                 self.normal = np.array(e[7])
                 self.distance = np.array(e[8])
-                self.normal_force = np.array(e[9])
-                self.force = self.normal_force * self.normal
+                self.normal_force = e[9]
+                self.force = self.normal * self.normal_force
+                self.force += e[10] * np.array(e[11])
+                self.force += e[12] * np.array(e[13])
+
+def print_contact_info(contact_info):
+    active = []
+    normal = []
+    normal_force = []
+    force = []
+    for e in contact_info:
+        active.append(e.active)
+        normal.append(e.normal)
+        force.append(e.force)
+        normal_force.append(e.normal_force)
+    np.set_printoptions(precision=4)
+    print('Contact Info (PyBullet):')
+    print('  contact state:', active)
+    print('  contact normal:', normal)
+    print('  contact force:', force)
+    print('  normal contact force: ', np.array(normal_force))
 
 # imu_gyro_noise: 0.01 
 # imu_lin_accel_noise: 0.1
@@ -43,7 +62,8 @@ class A1Simulator:
                  imu_gyro_noise=0.01, imu_lin_accel_noise=0.1,
                  imu_gyro_bias_noise=0.00001,
                  imu_lin_accel_bias_noise=0.0001,
-                 qJ_noise=0.001, dqJ_noise=0.1, tauJ_noise=0.1):
+                 qJ_noise=0.001, dqJ_noise=0.1, tauJ_noise=0.1, fJ_noise=1.0,
+                 terrain=False):
         self.path_to_urdf = path_to_urdf
         self.time_step = time_step
         self.imu_gyro_noise = imu_gyro_noise
@@ -53,15 +73,18 @@ class A1Simulator:
         self.qJ_noise = qJ_noise
         self.dqJ_noise = dqJ_noise
         self.tauJ_noise = tauJ_noise
+        self.fJ_noise = fJ_noise
         self.imu_gyro_bias = np.zeros(3)
         self.imu_accel_bias = np.zeros(3)
+        self.terrain = terrain
         self.calib_camera = False
         self.camera_distance = 0.0
         self.camera_yaw = 0.0
         self.camera_pitch = 0.0
         self.camera_target_pos = [0., 0., 0.]
-        self.plane = None
+        self.ground = None
         self.robot = None
+        self.friction_coefficient = None
         self.base_lin_vel_world_prev = np.zeros(3)
         self.q = np.array([0, 0, 0.3181, 0, 0, 0, 1, 
                            0.0,  0.67, -1.3, 
@@ -93,6 +116,10 @@ class A1Simulator:
                                             self.camera_pitch,
                                             self.camera_target_pos)
 
+    def set_friction_coefficient(self, mu):
+        assert mu > 0.0
+        self.friction_coefficient = mu
+
     def init(self, q=None):
         if q is not None:
             self.q = q
@@ -100,7 +127,12 @@ class A1Simulator:
         pybullet.setGravity(0, 0, -9.81)
         pybullet.setTimeStep(self.time_step)
         pybullet.setAdditionalSearchPath(pybullet_data.getDataPath())
-        self.plane = pybullet.loadURDF("plane.urdf")
+        if self.terrain:
+            self.ground = pybullet.loadURDF("terrain.urdf")
+        else:
+            self.ground = pybullet.loadURDF("plane.urdf")
+        if self.friction_coefficient is not None:
+            pybullet.changeDynamics(self.ground, -1, lateralFriction=self.friction_coefficient)
         self.robot = pybullet.loadURDF(self.path_to_urdf,  
                                        useFixedBase=False, 
                                        useMaximalCoordinates=False)
@@ -112,7 +144,7 @@ class A1Simulator:
 
     def step_simulation(self):
         pybullet.stepSimulation()
-        contacts = pybullet.getContactPoints(self.robot, self.plane)
+        contacts = pybullet.getContactPoints(self.robot, self.ground)
         self.contact_info_LF.set_from_pybullet(contacts)
         self.contact_info_LH.set_from_pybullet(contacts)
         self.contact_info_RF.set_from_pybullet(contacts)
@@ -226,7 +258,7 @@ class A1Simulator:
 
     def apply_torque_command(self, tauJ):
         self.torque_control_mode = True
-        self.tauJ = tauJ.copy()
+        self.tauJ = tauJ.copy() + np.random.normal(0, self.fJ_noise, 12)
         # turn off position and velocity controls
         joints = [7, 9, 10, 2, 4, 5, 17, 19, 20, 12, 14, 15]
         for e in joints:

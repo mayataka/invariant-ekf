@@ -10,37 +10,39 @@
 #include "Eigen/StdVector"
 #include "Eigen/Geometry"
 
-#include "inekf/macros.hpp"
-#include "inekf/inekf.hpp"
-#include "inekf/robot_state.hpp"
-#include "inekf/noise_params.hpp"
-#include "inekf/observations.hpp"
-#include "inekf/robot_model.hpp"
-#include "inekf/contact_estimator.hpp"
-#include "inekf/low_pass_filter.hpp"
-#include "inekf/state_estimator_settings.hpp"
+#include "legged_state_estimator/macros.hpp"
+#include "legged_state_estimator/inekf/inekf.hpp"
+#include "legged_state_estimator/inekf/inekf_state.hpp"
+#include "legged_state_estimator/inekf/noise_params.hpp"
+#include "legged_state_estimator/inekf/observations.hpp"
+#include "legged_state_estimator/robot_model.hpp"
+#include "legged_state_estimator/contact_estimator.hpp"
+#include "legged_state_estimator/slip_estimator.hpp"
+#include "legged_state_estimator/low_pass_filter.hpp"
+#include "legged_state_estimator/state_estimator_settings.hpp"
 
 
-namespace inekf {
+namespace legged_state_estimator {
 
-class StateEstimator {
+class LeggedStateEstimator {
 public:
   using Vector3d = Eigen::Matrix<double, 3, 1>;
   using Vector4d = Eigen::Matrix<double, 4, 1>;
   using Vector6d = Eigen::Matrix<double, 6, 1>;
+  using VectorXd = Eigen::MatrixXd;
   using Matrix3d = Eigen::Matrix<double, 3, 3>;
   using Matrix6d = Eigen::Matrix<double, 6, 6>;
 
-  StateEstimator(const StateEstimatorSettings& settings);
+  LeggedStateEstimator(const LeggedStateEstimatorSettings& settings);
 
-  StateEstimator();
+  LeggedStateEstimator();
 
-  ~StateEstimator();
+  ~LeggedStateEstimator();
 
-  INEKF_USE_DEFAULT_COPY_CONSTRUCTOR(StateEstimator);
-  INEKF_USE_DEFAULT_COPY_ASSIGN_OPERATOR(StateEstimator);
-  INEKF_USE_DEFAULT_MOVE_CONSTRUCTOR(StateEstimator);
-  INEKF_USE_DEFAULT_MOVE_ASSIGN_OPERATOR(StateEstimator);
+  INEKF_USE_DEFAULT_COPY_CONSTRUCTOR(LeggedStateEstimator);
+  INEKF_USE_DEFAULT_COPY_ASSIGN_OPERATOR(LeggedStateEstimator);
+  INEKF_USE_DEFAULT_MOVE_CONSTRUCTOR(LeggedStateEstimator);
+  INEKF_USE_DEFAULT_MOVE_ASSIGN_OPERATOR(LeggedStateEstimator);
 
   ///
   /// @brief Initializes the state estimator.
@@ -87,12 +89,13 @@ public:
   /// @param[in] qJ Raw measurement of the joint positions. 
   /// @param[in] dqJ Raw measurement of the joint velocities. 
   /// @param[in] tauJ Raw measurement of the joint torques. 
-  /// @param[in] f_raw Raw measurement of the foot force sensor. 
   ///
   void update(const Eigen::Vector3d& imu_gyro_raw, 
               const Eigen::Vector3d& imu_lin_accel_raw, 
               const Eigen::VectorXd& qJ, const Eigen::VectorXd& dqJ, 
-              const Eigen::VectorXd& tauJ, const std::vector<double>& f_raw={});
+              const Eigen::VectorXd& tauJ);
+
+  void updateContactInfo(const Eigen::VectorXd& qJ, const Eigen::VectorXd& dqJ);
 
   ///
   /// @return const reference to the base position estimate.
@@ -133,7 +136,7 @@ public:
   /// @return const reference to the base angular velocity estimate expressed in 
   /// the local frame.
   ///
-  Eigen::Vector3d getBaseAngularVelocityEstimateLocal() const;
+  const Eigen::Vector3d& getBaseAngularVelocityEstimateLocal() const;
 
   ///
   /// @return const reference to the IMU gyro bias estimate. 
@@ -160,37 +163,38 @@ public:
   ///
   const Eigen::VectorXd& getJointTorqueEstimate() const;
 
-  ///
-  /// @return const reference to the conatct force estimates. 
-  ///
-  const std::vector<Eigen::Vector3d>& getContactForceEstimate() const;
+  const ContactEstimator& getContactEstimator() const;
 
-  ///
-  /// @return const reference to the conatct probabilities. 
-  ///
-  const std::vector<double>& getContactProbability() const;
+  const SlipEstimator& getSlipEstimator() const;
+
+  void resetContactSurfaceNormalEstimate(
+      const std::vector<Eigen::Vector3d>& contact_surface_normal);
+
+  void resetFrictionCoefficientEstimate(
+      const std::vector<double>& friction_coefficient);
 
   ///
   /// @return const reference to the state estimator settings. 
   ///
-  const StateEstimatorSettings& getSettings() const;
+  const LeggedStateEstimatorSettings& getSettings() const;
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 private:
-  StateEstimatorSettings settings_;
+  LeggedStateEstimatorSettings settings_;
   InEKF inekf_;
   vectorKinematics leg_kinematics_;
   RobotModel robot_model_;
   ContactEstimator contact_estimator_;
+  SlipEstimator slip_estimator_;
   LowPassFilter<double, 3> lpf_gyro_accel_world_, lpf_lin_accel_world_;
   LowPassFilter<double, Eigen::Dynamic> lpf_dqJ_, lpf_ddqJ_, lpf_tauJ_;
-  Vector3d imu_gyro_raw_world_, imu_gyro_raw_world_prev_, imu_gyro_accel_world_, 
-           imu_gyro_accel_local_, imu_lin_accel_raw_world_, imu_lin_accel_local_;
-  Vector6d imu_raw_;
+  Vector3d imu_gyro_local_, imu_gyro_world_, imu_gyro_world_prev_, 
+           imu_gyro_accel_local_, imu_gyro_accel_world_, 
+           imu_lin_accel_local_, imu_lin_accel_world_;
   Vector4d quat_;
 };
 
-} // namespace inekf
+} // namespace legged_state_estimator
 
 #endif // INEKF_STATE_ESTIMATOR_HPP_ 

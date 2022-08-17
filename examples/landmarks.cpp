@@ -17,7 +17,7 @@
 #include <cstdlib>
 #include <Eigen/Dense>
 #include <boost/algorithm/string.hpp>
-#include "inekf/inekf.hpp"
+#include "legged_state_estimator/inekf/inekf.hpp"
 
 #define DT_MIN 1e-6
 #define DT_MAX 1
@@ -31,11 +31,11 @@ int stoi98(const std::string &s) {
 }
 
 using namespace std;
-using namespace inekf;
+using namespace legged_state_estimator;
 
 int main() {
     //  ---- Initialize invariant extended Kalman filter ----- //
-    RobotState initial_state; 
+    InEKFState initial_state; 
 
     // Initialize state mean
     Eigen::Matrix3d R0;
