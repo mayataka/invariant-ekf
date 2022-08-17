@@ -23,17 +23,17 @@
 #include "Eigen/LU"
 #include "unsupported/Eigen/MatrixFunctions"
 
-#include "inekf/inekf_state.hpp"
-#include "inekf/noise_params.hpp"
-#include "inekf/lie_group.hpp"
-#include "inekf/observations.hpp"
-#include "inekf/macros.hpp"
-#include "inekf/error_type.hpp"
-#include "inekf/state_transition_matrix.hpp"
-#include "inekf/discrete_noise_matrix.hpp"
+#include "legged_state_estimator/inekf/inekf_state.hpp"
+#include "legged_state_estimator/inekf/noise_params.hpp"
+#include "legged_state_estimator/inekf/lie_group.hpp"
+#include "legged_state_estimator/inekf/observations.hpp"
+#include "legged_state_estimator/inekf/error_type.hpp"
+#include "legged_state_estimator/inekf/state_transition_matrix.hpp"
+#include "legged_state_estimator/inekf/discrete_noise_matrix.hpp"
+#include "legged_state_estimator/macros.hpp"
 
 
-namespace inekf {
+namespace legged_state_estimator {
 
 class InEKF {
 public:
@@ -260,6 +260,6 @@ private:
   // void CorrectFullState(const Observation& obs); // TODO
 };
 
-} // namespace inekf 
+} // namespace legged_state_estimator 
 
 #endif // INEKF_INEKF_HPP_

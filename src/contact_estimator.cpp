@@ -1,7 +1,7 @@
-#include "inekf/contact_estimator.hpp"
+#include "legged_state_estimator/contact_estimator.hpp"
 
 
-namespace inekf {
+namespace legged_state_estimator {
 
 ContactEstimator::ContactEstimator(const RobotModel& robot_model,
                                    const ContactEstimatorSettings& settings)
@@ -187,4 +187,4 @@ std::ostream& operator<<(std::ostream& os, const ContactEstimator& e) {
   return os;
 }
 
-} // namespace inekf
+} // namespace legged_state_estimator

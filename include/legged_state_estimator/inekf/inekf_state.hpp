@@ -18,10 +18,10 @@
 
 #include "Eigen/Core"
 
-#include "inekf/macros.hpp"
+#include "legged_state_estimator/macros.hpp"
 
 
-namespace inekf {
+namespace legged_state_estimator {
 
 enum StateType {WorldCentric, BodyCentric};
 
@@ -94,6 +94,6 @@ private:
   Eigen::MatrixXd P_;
 };
 
-} // namespace inekf 
+} // namespace legged_state_estimator 
 
 #endif // INEKF_ROBOTSTATE_HPP_

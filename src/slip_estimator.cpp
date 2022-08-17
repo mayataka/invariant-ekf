@@ -1,7 +1,7 @@
-#include "inekf/slip_estimator.hpp"
+#include "legged_state_estimator/slip_estimator.hpp"
 
 
-namespace inekf {
+namespace legged_state_estimator {
 
 SlipEstimator::SlipEstimator(const RobotModel& robot_model, 
                              const SlipEstimatorSettings& settings,
@@ -241,4 +241,4 @@ std::ostream& operator<<(std::ostream& os, const SlipEstimator& e) {
   return os;
 }
 
-} // namespace inekf
+} // namespace legged_state_estimator

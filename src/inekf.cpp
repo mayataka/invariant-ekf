@@ -11,10 +11,10 @@
  *  @date   September 25, 2018
  **/
 
-#include "inekf/inekf.hpp"
+#include "legged_state_estimator/inekf/inekf.hpp"
 
 
-namespace inekf {
+namespace legged_state_estimator {
 
 using namespace std;
 

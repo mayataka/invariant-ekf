@@ -11,10 +11,10 @@
  *  @date   September 25, 2018
  **/
 
-#include "inekf/lie_group.hpp"
+#include "legged_state_estimator/inekf/lie_group.hpp"
 
 
-namespace inekf {
+namespace legged_state_estimator {
 
 using namespace std;
 
@@ -219,4 +219,4 @@ void Adjoint_SEK3(const Eigen::MatrixXd& X, Eigen::MatrixXd& Adj) {
   }
 }
 
-} // namespace inekf 
+} // namespace legged_state_estimator 

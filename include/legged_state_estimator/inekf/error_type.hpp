@@ -1,10 +1,10 @@
 #ifndef INEKF_ERROR_TYPE_HPP_
 #define INEKF_ERROR_TYPE_HPP_
 
-namespace inekf {
+namespace legged_state_estimator {
 
 enum ErrorType {LeftInvariant, RightInvariant};
 
-} // namespace inekf
+} // namespace legged_state_estimator
 
 #endif // INEKF_ERROR_TYPE_HPP_

@@ -20,10 +20,10 @@
 
 #include "Eigen/Core"
 
-#include "inekf/macros.hpp"
+#include "legged_state_estimator/macros.hpp"
 
 
-namespace inekf {
+namespace legged_state_estimator {
 
 // Simple class to hold general observations 
 class Observation {
@@ -121,6 +121,6 @@ using vectorKinematicsIterator = std::vector<Kinematics, Eigen::aligned_allocato
 using vectorLandmarks = std::vector<Landmark, Eigen::aligned_allocator<Landmark>>;
 using vectorLandmarksIterator = std::vector<Landmark, Eigen::aligned_allocator<Landmark>>::const_iterator;
 
-} // namespace inekf 
+} // namespace legged_state_estimator 
 
 #endif // INEKF_OBSERVATIONS_HPP_

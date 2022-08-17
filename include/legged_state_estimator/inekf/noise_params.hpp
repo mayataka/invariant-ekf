@@ -17,10 +17,10 @@
 
 #include "Eigen/Core"
 
-#include "inekf/macros.hpp"
+#include "legged_state_estimator/macros.hpp"
 
 
-namespace inekf {
+namespace legged_state_estimator {
 
 class NoiseParams {
 public:
@@ -71,6 +71,6 @@ private:
   Eigen::Matrix3d Qc_;
 };
 
-} // namespace inekf 
+} // namespace legged_state_estimator 
 
 #endif // INEKF_NOISEPARAMS_HPP_

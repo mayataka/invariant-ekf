@@ -1,11 +1,11 @@
-#include "inekf/state_estimator_settings.hpp"
+#include "legged_state_estimator/state_estimator_settings.hpp"
 
 
-namespace inekf {
+namespace legged_state_estimator {
 
-StateEstimatorSettings StateEstimatorSettings::UnitreeA1(
+LeggedStateEstimatorSettings LeggedStateEstimatorSettings::UnitreeA1(
     const std::string& path_to_urdf, const double dt) {
-  StateEstimatorSettings settings;
+  LeggedStateEstimatorSettings settings;
   settings.path_to_urdf = path_to_urdf;
   settings.imu_frame = 46;
   settings.contact_frames = {14, 24, 34, 44}; // LF, RF, LH, RH
@@ -44,4 +44,4 @@ StateEstimatorSettings StateEstimatorSettings::UnitreeA1(
   return settings;
 }
 
-} // namespace inekf
+} // namespace legged_state_estimator

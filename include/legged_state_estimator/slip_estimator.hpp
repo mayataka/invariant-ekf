@@ -10,13 +10,13 @@
 #include "Eigen/Core"
 #include "Eigen/StdVector"
 
-#include "inekf/macros.hpp"
-#include "inekf/robot_model.hpp"
-#include "inekf/contact_estimator.hpp"
-#include "inekf/low_pass_filter.hpp"
+#include "legged_state_estimator/macros.hpp"
+#include "legged_state_estimator/robot_model.hpp"
+#include "legged_state_estimator/contact_estimator.hpp"
+#include "legged_state_estimator/low_pass_filter.hpp"
 
 
-namespace inekf {
+namespace legged_state_estimator {
 
 struct SlipEstimatorSettings {
   std::vector<double> beta0;
@@ -25,8 +25,6 @@ struct SlipEstimatorSettings {
   double slip_prob_threshold;
   double lpf_contact_surface_normal_cutoff;
   double lpf_friction_coefficient_cutoff;
-
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 
@@ -35,8 +33,7 @@ public:
   using Vector1d = Eigen::Matrix<double, 1, 1>;
 
   SlipEstimator(const RobotModel& robot_model, 
-                const SlipEstimatorSettings& settings,
-                const double dt);
+                const SlipEstimatorSettings& settings, const double dt);
 
   SlipEstimator();
 
@@ -101,6 +98,6 @@ private:
   int num_contacts_;
 };
 
-} // namespace inekf
+} // namespace legged_state_estimator
 
 #endif // INEKF_SLIP_ESTIMATOR_HPP_

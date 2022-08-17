@@ -1,7 +1,7 @@
-#include "inekf/discrete_noise_matrix.hpp"
+#include "legged_state_estimator/inekf/discrete_noise_matrix.hpp"
 
 
-namespace inekf {
+namespace legged_state_estimator {
 
 DiscreteNoiseMatrix::DiscreteNoiseMatrix() { 
 }
@@ -70,4 +70,4 @@ void DiscreteNoiseMatrix::compute(const InEKFState& state, const NoiseParams& no
   Qd_.noalias() = PhiG_ * Qc_ * PhiG_.transpose() * dt; // Approximated discretized noise matrix (TODO: compute analytical)
 }
 
-} // namespace inekf 
+} // namespace legged_state_estimator 

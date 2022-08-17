@@ -20,10 +20,10 @@
 #include <vector>
 #include <random>
 #include <chrono>
-#include "inekf/inekf.hpp"
+#include "legged_state_estimator/inekf/inekf.hpp"
 
 using namespace std;
-using namespace inekf;
+using namespace legged_state_estimator;
 
 int main() {
     typedef std::chrono::high_resolution_clock myclock;

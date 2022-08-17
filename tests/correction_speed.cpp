@@ -18,13 +18,13 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <Eigen/Dense>
 #include <boost/algorithm/string.hpp>
-#include "inekf/inekf.hpp"
+#include "legged_state_estimator/inekf/inekf.hpp"
 
 #define DT_MIN 1e-6
 #define DT_MAX 1
 
 using namespace std;
-using namespace inekf;
+using namespace legged_state_estimator;
 using namespace boost::posix_time;
 
 typedef vector<pair<double,Eigen::Matrix<double,6,1> > > vectorPairIntVector6d;

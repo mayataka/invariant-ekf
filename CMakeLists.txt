@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(inekf)
+project(legged_state_estimator)
 
 if (NOT "${CMAKE_CXX_STANDARD}")
   set(CMAKE_CXX_STANDARD 11)
@@ -79,7 +79,7 @@ endif()
 find_package(Threads)
 find_package(Boost REQUIRED COMPONENTS system)
 
-macro(inekf_add_test EXACUTABLE)
+macro(legged_state_estimator_add_test EXACUTABLE)
   add_executable(
     ${EXACUTABLE} 
     ${PROJECT_SOURCE_DIR}/tests/${EXACUTABLE}.cpp
@@ -99,13 +99,13 @@ macro(inekf_add_test EXACUTABLE)
 endmacro()
 
 if (BUILD_EXAMPLES)
-  inekf_add_test(propagation_speed)
-  inekf_add_test(correction_speed)
-  inekf_add_test(large_state_speed)
-  inekf_add_test(left_vs_right_error_dynamics)
+  legged_state_estimator_add_test(propagation_speed)
+  legged_state_estimator_add_test(correction_speed)
+  legged_state_estimator_add_test(large_state_speed)
+  legged_state_estimator_add_test(left_vs_right_error_dynamics)
 endif()
 
-macro(inekf_add_example EXACUTABLE)
+macro(legged_state_estimator_add_example EXACUTABLE)
   add_executable(
     ${EXACUTABLE} 
     ${PROJECT_SOURCE_DIR}/examples/${EXACUTABLE}.cpp
@@ -125,8 +125,8 @@ macro(inekf_add_example EXACUTABLE)
 endmacro()
 
 if (BUILD_EXAMPLES)
-  inekf_add_example(landmarks)
-  inekf_add_example(kinematics)
+  legged_state_estimator_add_example(landmarks)
+  legged_state_estimator_add_example(kinematics)
 endif()
 
 

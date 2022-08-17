@@ -1,7 +1,7 @@
-#include "inekf/state_transition_matrix.hpp"
+#include "legged_state_estimator/inekf/state_transition_matrix.hpp"
 
 
-namespace inekf {
+namespace legged_state_estimator {
 
 StateTransitionMatrix::StateTransitionMatrix() { 
   phi_.setZero();
@@ -145,4 +145,4 @@ void StateTransitionMatrix::compute(const InEKFState& state, const Eigen::Vector
   }
 }
 
-} // namespace inekf 
+} // namespace legged_state_estimator 

@@ -16,10 +16,10 @@
 #include "pinocchio/algorithm/frames-derivatives.hpp"
 #include "pinocchio/algorithm/rnea.hpp"
 
-#include "inekf/macros.hpp"
+#include "legged_state_estimator/macros.hpp"
 
 
-namespace inekf {
+namespace legged_state_estimator {
 
 ///
 /// @class RobotModel
@@ -255,6 +255,6 @@ private:
 
 };
 
-} // namespace inekf
+} // namespace legged_state_estimator
 
 #endif // INEKF_ROBOT_MODEL_HPP_

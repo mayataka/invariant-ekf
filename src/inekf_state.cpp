@@ -11,11 +11,11 @@
  *  @date   September 25, 2018
  **/
 
-#include "inekf/inekf_state.hpp"
-#include "inekf/lie_group.hpp"
+#include "legged_state_estimator/inekf/inekf_state.hpp"
+#include "legged_state_estimator/inekf/lie_group.hpp"
 
 
-namespace inekf {
+namespace legged_state_estimator {
 
 // Default constructor
 InEKFState::InEKFState() : 
@@ -214,4 +214,4 @@ std::ostream& operator<<(std::ostream& os, const InEKFState& s) {
   return os;  
 } 
 
-} // namespace inekf 
+} // namespace legged_state_estimator 

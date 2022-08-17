@@ -3,10 +3,10 @@
 #include <pybind11/eigen.h>
 #include <pybind11/numpy.h>
 
-#include "inekf/slip_estimator.hpp"
+#include "legged_state_estimator/slip_estimator.hpp"
 
 
-namespace inekf {
+namespace legged_state_estimator {
 namespace python {
 
 namespace py = pybind11;
@@ -43,4 +43,4 @@ PYBIND11_MODULE(slip_estimator, m) {
 }
 
 } // namespace python
-} // namespace inekf
+} // namespace legged_state_estimator

@@ -1,7 +1,7 @@
-#include "inekf/robot_model.hpp"
+#include "legged_state_estimator/robot_model.hpp"
 
 
-namespace inekf {
+namespace legged_state_estimator {
 
 pinocchio::Model RobotModel::buildFloatingBaseModel(
     const std::string& path_to_urdf) {
@@ -292,4 +292,4 @@ int RobotModel::numContacts() const {
   return contact_frames_.size();
 }
 
-} // namespace inekf
+} // namespace legged_state_estimator

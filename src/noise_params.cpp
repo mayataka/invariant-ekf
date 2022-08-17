@@ -11,10 +11,10 @@
  *  @date   September 25, 2018
  **/
 
-#include "inekf/noise_params.hpp"
+#include "legged_state_estimator/inekf/noise_params.hpp"
 
 
-namespace inekf {
+namespace legged_state_estimator {
 
 // ------------ NoiseParams -------------
 // Default Constructor

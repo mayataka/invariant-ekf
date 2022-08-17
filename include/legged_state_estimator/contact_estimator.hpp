@@ -10,19 +10,17 @@
 #include "Eigen/Core"
 #include "Eigen/StdVector"
 
-#include "inekf/macros.hpp"
-#include "inekf/robot_model.hpp"
+#include "legged_state_estimator/macros.hpp"
+#include "legged_state_estimator/robot_model.hpp"
 
 
-namespace inekf {
+namespace legged_state_estimator {
 
 struct ContactEstimatorSettings {
   std::vector<double> beta0;
   std::vector<double> beta1;
   double contact_force_cov_alpha;
   double contact_prob_threshold;
-
-  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 };
 
 
@@ -81,6 +79,6 @@ private:
   int num_contacts_;
 };
 
-} // namespace inekf
+} // namespace legged_state_estimator
 
 #endif // INEKF_CONTACT_ESTIMATOR_HPP_ 

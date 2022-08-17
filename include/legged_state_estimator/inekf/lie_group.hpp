@@ -18,7 +18,7 @@
 
 #include "Eigen/Core"
 
-namespace inekf {
+namespace legged_state_estimator {
 
 long int factorial(const int n);
 Eigen::Matrix3d skew(const Eigen::Vector3d& v);
@@ -46,6 +46,6 @@ void Exp_SEK3(const Eigen::VectorXd& v, Eigen::Matrix3d& M,
 Eigen::MatrixXd Adjoint_SEK3(const Eigen::MatrixXd& X);
 void Adjoint_SEK3(const Eigen::MatrixXd& X, Eigen::MatrixXd& Adj);
 
-} // namespace inekf 
+} // namespace legged_state_estimator 
 
 #endif // INEKF_LIEGROUP_HPP_

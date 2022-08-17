@@ -5,14 +5,14 @@
 
 #include "Eigen/Core"
 
-#include "inekf/inekf_state.hpp"
-#include "inekf/noise_params.hpp"
-#include "inekf/lie_group.hpp"
-#include "inekf/macros.hpp"
-#include "inekf/error_type.hpp"
+#include "legged_state_estimator/inekf/inekf_state.hpp"
+#include "legged_state_estimator/inekf/noise_params.hpp"
+#include "legged_state_estimator/inekf/lie_group.hpp"
+#include "legged_state_estimator/inekf/error_type.hpp"
+#include "legged_state_estimator/macros.hpp"
 
 
-namespace inekf {
+namespace legged_state_estimator {
 
 class DiscreteNoiseMatrix {
 public:
@@ -42,6 +42,6 @@ private:
 
 };
 
-} // namespace inekf 
+} // namespace legged_state_estimator 
 
 #endif // INEKF_DISCRETE_NOISE_MATRIX_HPP_

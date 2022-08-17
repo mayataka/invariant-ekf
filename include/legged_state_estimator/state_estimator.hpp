@@ -10,21 +10,21 @@
 #include "Eigen/StdVector"
 #include "Eigen/Geometry"
 
-#include "inekf/macros.hpp"
-#include "inekf/inekf.hpp"
-#include "inekf/inekf_state.hpp"
-#include "inekf/noise_params.hpp"
-#include "inekf/observations.hpp"
-#include "inekf/robot_model.hpp"
-#include "inekf/contact_estimator.hpp"
-#include "inekf/slip_estimator.hpp"
-#include "inekf/low_pass_filter.hpp"
-#include "inekf/state_estimator_settings.hpp"
+#include "legged_state_estimator/macros.hpp"
+#include "legged_state_estimator/inekf/inekf.hpp"
+#include "legged_state_estimator/inekf/inekf_state.hpp"
+#include "legged_state_estimator/inekf/noise_params.hpp"
+#include "legged_state_estimator/inekf/observations.hpp"
+#include "legged_state_estimator/robot_model.hpp"
+#include "legged_state_estimator/contact_estimator.hpp"
+#include "legged_state_estimator/slip_estimator.hpp"
+#include "legged_state_estimator/low_pass_filter.hpp"
+#include "legged_state_estimator/state_estimator_settings.hpp"
 
 
-namespace inekf {
+namespace legged_state_estimator {
 
-class StateEstimator {
+class LeggedStateEstimator {
 public:
   using Vector3d = Eigen::Matrix<double, 3, 1>;
   using Vector4d = Eigen::Matrix<double, 4, 1>;
@@ -33,16 +33,16 @@ public:
   using Matrix3d = Eigen::Matrix<double, 3, 3>;
   using Matrix6d = Eigen::Matrix<double, 6, 6>;
 
-  StateEstimator(const StateEstimatorSettings& settings);
+  LeggedStateEstimator(const LeggedStateEstimatorSettings& settings);
 
-  StateEstimator();
+  LeggedStateEstimator();
 
-  ~StateEstimator();
+  ~LeggedStateEstimator();
 
-  INEKF_USE_DEFAULT_COPY_CONSTRUCTOR(StateEstimator);
-  INEKF_USE_DEFAULT_COPY_ASSIGN_OPERATOR(StateEstimator);
-  INEKF_USE_DEFAULT_MOVE_CONSTRUCTOR(StateEstimator);
-  INEKF_USE_DEFAULT_MOVE_ASSIGN_OPERATOR(StateEstimator);
+  INEKF_USE_DEFAULT_COPY_CONSTRUCTOR(LeggedStateEstimator);
+  INEKF_USE_DEFAULT_COPY_ASSIGN_OPERATOR(LeggedStateEstimator);
+  INEKF_USE_DEFAULT_MOVE_CONSTRUCTOR(LeggedStateEstimator);
+  INEKF_USE_DEFAULT_MOVE_ASSIGN_OPERATOR(LeggedStateEstimator);
 
   ///
   /// @brief Initializes the state estimator.
@@ -176,12 +176,12 @@ public:
   ///
   /// @return const reference to the state estimator settings. 
   ///
-  const StateEstimatorSettings& getSettings() const;
+  const LeggedStateEstimatorSettings& getSettings() const;
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
 private:
-  StateEstimatorSettings settings_;
+  LeggedStateEstimatorSettings settings_;
   InEKF inekf_;
   vectorKinematics leg_kinematics_;
   RobotModel robot_model_;
@@ -195,6 +195,6 @@ private:
   Vector4d quat_;
 };
 
-} // namespace inekf
+} // namespace legged_state_estimator
 
 #endif // INEKF_STATE_ESTIMATOR_HPP_ 
