@@ -5,9 +5,9 @@
  * -------------------------------------------------------------------------- */
 
 /**
- *  @file   robot_state.hpp
+ *  @file   inekf_state.hpp
  *  @author Ross Hartley
- *  @brief  Header file for RobotState
+ *  @brief  Header file for InEKFState
  *  @date   September 25, 2018
  **/
 
@@ -25,18 +25,18 @@ namespace inekf {
 
 enum StateType {WorldCentric, BodyCentric};
 
-class RobotState {
+class InEKFState {
 public:
-  RobotState();
-  RobotState(const Eigen::MatrixXd& X);
-  RobotState(const Eigen::MatrixXd& X, const Eigen::VectorXd& Theta);
-  RobotState(const Eigen::MatrixXd& X, const Eigen::VectorXd& Theta, const Eigen::MatrixXd& P);
+  InEKFState();
+  InEKFState(const Eigen::MatrixXd& X);
+  InEKFState(const Eigen::MatrixXd& X, const Eigen::VectorXd& Theta);
+  InEKFState(const Eigen::MatrixXd& X, const Eigen::VectorXd& Theta, const Eigen::MatrixXd& P);
 
-  INEKF_USE_DEFAULT_DESTTUCTOR(RobotState);
-  INEKF_USE_DEFAULT_COPY_CONSTRUCTOR(RobotState);
-  INEKF_USE_DEFAULT_COPY_ASSIGN_OPERATOR(RobotState);
-  INEKF_USE_DEFAULT_MOVE_CONSTRUCTOR(RobotState);
-  INEKF_USE_DEFAULT_MOVE_ASSIGN_OPERATOR(RobotState);
+  INEKF_USE_DEFAULT_DESTTUCTOR(InEKFState);
+  INEKF_USE_DEFAULT_COPY_CONSTRUCTOR(InEKFState);
+  INEKF_USE_DEFAULT_COPY_ASSIGN_OPERATOR(InEKFState);
+  INEKF_USE_DEFAULT_MOVE_CONSTRUCTOR(InEKFState);
+  INEKF_USE_DEFAULT_MOVE_ASSIGN_OPERATOR(InEKFState);
 
   const Eigen::MatrixXd& getX() const;
   const Eigen::VectorXd& getTheta() const;
@@ -83,7 +83,7 @@ public:
 
   Eigen::MatrixXd calcXinv() const;
 
-  friend std::ostream& operator<<(std::ostream& os, const RobotState& s);  
+  friend std::ostream& operator<<(std::ostream& os, const InEKFState& s);  
 
   EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 

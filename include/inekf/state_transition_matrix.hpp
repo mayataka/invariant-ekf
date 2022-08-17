@@ -3,7 +3,7 @@
 
 #include "Eigen/Core"
 
-#include "inekf/robot_state.hpp"
+#include "inekf/inekf_state.hpp"
 #include "inekf/lie_group.hpp"
 #include "inekf/macros.hpp"
 #include "inekf/error_type.hpp"
@@ -15,9 +15,9 @@ class StateTransitionMatrix {
 public:
   StateTransitionMatrix();
 
-  StateTransitionMatrix(const RobotState& state);
+  StateTransitionMatrix(const InEKFState& state);
 
-  StateTransitionMatrix(const RobotState& state, const ErrorType error_type);
+  StateTransitionMatrix(const InEKFState& state, const ErrorType error_type);
 
   INEKF_USE_DEFAULT_DESTTUCTOR(StateTransitionMatrix);
   INEKF_USE_DEFAULT_COPY_CONSTRUCTOR(StateTransitionMatrix);
@@ -25,7 +25,7 @@ public:
   INEKF_USE_DEFAULT_MOVE_CONSTRUCTOR(StateTransitionMatrix);
   INEKF_USE_DEFAULT_MOVE_ASSIGN_OPERATOR(StateTransitionMatrix);
 
-  void compute(const RobotState& state, const Eigen::Vector3d& w, 
+  void compute(const InEKFState& state, const Eigen::Vector3d& w, 
                const Eigen::Vector3d& a, double dt);
 
   const Eigen::MatrixXd& Phi() const {

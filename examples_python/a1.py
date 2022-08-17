@@ -12,7 +12,8 @@ sim = a1_simulator.A1Simulator(PATH_TO_URDF, TIME_STEP,
                                imu_gyro_bias_noise=0.00001,
                                imu_lin_accel_bias_noise=0.0001,
                                qJ_noise=0.001, dqJ_noise=0.1, 
-                               ddqJ_noise=1.0, tauJ_noise=0.1)
+                               tauJ_noise=0.1, terrain=False)
+sim.set_friction_coefficient(1.0)
 
 estimator_settings = inekf.StateEstimatorSettings.UnitreeA1(PATH_TO_URDF, TIME_STEP)
 estimator_settings.contact_estimator.beta0 = [-20.0, -20.0, -20.0, -20.0]
@@ -125,7 +126,7 @@ for i in range(10000):
     print('base_rot error:', diff)
     print('base_lin_vel error:', base_lin_vel-estimator.base_linear_velocity_estimate_local)
     print('base_ang_vel error:', base_ang_vel-estimator.base_angular_velocity_estimate_local)
-    print('contact_probability:', estimator.contact_probability)
+    print(estimator.get_contact_estimator())
 
     if len(base_pos_est) > PLT_WINDOW_SIZE:
         base_pos_true.pop(0)

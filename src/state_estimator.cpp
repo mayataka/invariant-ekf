@@ -65,7 +65,7 @@ void StateEstimator::init(const Eigen::Vector3d& base_pos,
                           const Eigen::Vector3d& base_lin_vel_world,
                           const Eigen::Vector3d& imu_gyro_bias,
                           const Eigen::Vector3d& imu_lin_accel_bias) {
-  RobotState initial_state;
+  InEKFState initial_state;
   initial_state.setPosition(base_pos);
   initial_state.setRotation(Eigen::Quaterniond(base_quat).toRotationMatrix());
   initial_state.setVelocity(base_lin_vel_world);

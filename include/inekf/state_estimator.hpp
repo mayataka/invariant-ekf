@@ -12,7 +12,7 @@
 
 #include "inekf/macros.hpp"
 #include "inekf/inekf.hpp"
-#include "inekf/robot_state.hpp"
+#include "inekf/inekf_state.hpp"
 #include "inekf/noise_params.hpp"
 #include "inekf/observations.hpp"
 #include "inekf/robot_model.hpp"

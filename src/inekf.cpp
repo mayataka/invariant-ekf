@@ -36,7 +36,7 @@ InEKF::InEKF(const NoiseParams& params)
     discrete_noise_matrix_() {}
 
 // Constructor with initial state
-InEKF::InEKF(const RobotState& state) 
+InEKF::InEKF(const InEKFState& state) 
   : g_((Eigen::VectorXd(3) << 0,0,-9.81).finished()), 
     magnetic_field_((Eigen::VectorXd(3) << std::cos(1.2049),0,std::sin(1.2049)).finished()), 
     state_(state),
@@ -50,7 +50,7 @@ InEKF::InEKF(const RobotState& state)
 }
 
 // Constructor with initial state and noise params
-InEKF::InEKF(const RobotState& state, const NoiseParams& params) 
+InEKF::InEKF(const InEKFState& state, const NoiseParams& params) 
   : g_((Eigen::VectorXd(3) << 0,0,-9.81).finished()), 
     magnetic_field_((Eigen::VectorXd(3) << std::cos(1.2049),0,std::sin(1.2049)).finished()), 
     state_(state), 
@@ -65,7 +65,7 @@ InEKF::InEKF(const RobotState& state, const NoiseParams& params)
 }
 
 // Constructor with initial state, noise params, and error type
-InEKF::InEKF(const RobotState& state, const NoiseParams& params, const ErrorType error_type) 
+InEKF::InEKF(const InEKFState& state, const NoiseParams& params, const ErrorType error_type) 
   : g_((Eigen::VectorXd(3) << 0,0,-9.81).finished()), 
     magnetic_field_((Eigen::VectorXd(3) << std::cos(1.2049),0,std::sin(1.2049)).finished()), 
     state_(state), 
@@ -82,7 +82,7 @@ InEKF::InEKF(const RobotState& state, const NoiseParams& params, const ErrorType
 
 // Clear all data in the filter
 void InEKF::clear() {
-  state_ = RobotState();
+  state_ = InEKFState();
   noise_params_ = NoiseParams();
   prior_landmarks_.clear();
   estimated_landmarks_.clear();
@@ -94,10 +94,10 @@ void InEKF::clear() {
 ErrorType InEKF::getErrorType() const { return error_type_; }
 
 // Return robot's current state
-const RobotState& InEKF::getState() const { return state_; }
+const InEKFState& InEKF::getState() const { return state_; }
 
 // Sets the robot's current state
-void InEKF::setState(const RobotState& state) { state_ = state; }
+void InEKF::setState(const InEKFState& state) { state_ = state; }
 
 // Return noise params
 const NoiseParams& InEKF::getNoiseParams() const { return noise_params_; }

@@ -30,7 +30,7 @@ int main() {
     myclock::time_point beginning = myclock::now();
 
     //  ---- Initialize invariant extended Kalman filter ----- //
-    RobotState initial_state; 
+    InEKFState initial_state; 
 
     // Initialize state mean
     Eigen::Matrix3d R0;
@@ -89,8 +89,8 @@ int main() {
     }
     
     // Print covariances
-    RobotState LI_state = LI_filter.getState();
-    RobotState RI_state = RI_filter.getState();
+    InEKFState LI_state = LI_filter.getState();
+    InEKFState RI_state = RI_filter.getState();
     cout << "Left Invariant State: \n" << LI_state << endl;
     cout << "Right Invariant State: \n" << RI_state << endl;
     cout << "Left Invariant Covariance: \n" << LI_state.getP() << endl << endl;

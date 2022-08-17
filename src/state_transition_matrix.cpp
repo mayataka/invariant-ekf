@@ -25,7 +25,7 @@ StateTransitionMatrix::StateTransitionMatrix() {
 }
 
 
-StateTransitionMatrix::StateTransitionMatrix(const RobotState& state)
+StateTransitionMatrix::StateTransitionMatrix(const InEKFState& state)
   : StateTransitionMatrix() {
   const int dimP = state.dimP();
   Phi_.resize(dimP, dimP);
@@ -33,14 +33,14 @@ StateTransitionMatrix::StateTransitionMatrix(const RobotState& state)
 }
 
 
-StateTransitionMatrix::StateTransitionMatrix(const RobotState& state, 
+StateTransitionMatrix::StateTransitionMatrix(const InEKFState& state, 
                                              const ErrorType error_type)
   : StateTransitionMatrix(state) {
   error_type_ = error_type;
 }
 
 
-void StateTransitionMatrix::compute(const RobotState& state, const Eigen::Vector3d& w, 
+void StateTransitionMatrix::compute(const InEKFState& state, const Eigen::Vector3d& w, 
                                     const Eigen::Vector3d& a, double dt) {
   phi_ = w*dt;
   Gamma_SO3(phi_, G0_, 0); // Computation can be sped up by computing G0,G1,G2 all at once

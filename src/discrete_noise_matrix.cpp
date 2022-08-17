@@ -7,7 +7,7 @@ DiscreteNoiseMatrix::DiscreteNoiseMatrix() {
 }
 
 
-DiscreteNoiseMatrix::DiscreteNoiseMatrix(const RobotState& state)
+DiscreteNoiseMatrix::DiscreteNoiseMatrix(const InEKFState& state)
   : DiscreteNoiseMatrix() {
   const int dimP = state.dimP();
   G_.resize(dimP, dimP);
@@ -21,14 +21,14 @@ DiscreteNoiseMatrix::DiscreteNoiseMatrix(const RobotState& state)
 }
 
 
-DiscreteNoiseMatrix::DiscreteNoiseMatrix(const RobotState& state, 
+DiscreteNoiseMatrix::DiscreteNoiseMatrix(const InEKFState& state, 
                                          const ErrorType error_type)
   : DiscreteNoiseMatrix(state) {
   error_type_ = error_type;
 }
 
 
-void DiscreteNoiseMatrix::compute(const RobotState& state, const NoiseParams& noise_params,
+void DiscreteNoiseMatrix::compute(const InEKFState& state, const NoiseParams& noise_params,
                                   const std::map<int,int>& estimated_contact_positions, 
                                   const Eigen::MatrixXd& Phi, double dt) {
   const int dimX = state.dimX();
